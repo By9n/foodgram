@@ -9,11 +9,12 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-5!-o_bn_df4_0elbfsdl5l)n&fu5d0l7@l8&el2=hjtm3n&xy7' # os.getenv('SECRET_KEY')
+# os.getenv('SECRET_KEY')
+SECRET_KEY = 'django-insecure-5!-o_bn_df4_0elbfsdl5l)n&fu5d0l7@l8&el2=hjtm3n&xy7'
 
-DEBUG = True # os.getenv('DEBUG') == 'True'
+DEBUG = True  # os.getenv('DEBUG') == 'True'
 
-ALLOWED_HOSTS = [] # os.environ['ALLOWED_HOSTS'].split(',')
+ALLOWED_HOSTS = []  # os.environ['ALLOWED_HOSTS'].split(',')
 
 # Application definition
 
@@ -119,14 +120,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 6,
     'DEFAULT_AUTHENTICATION_CLASSES': [
         "rest_framework.authentication.TokenAuthentication",
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 6,
 }
 
 DJOSER = {

@@ -7,16 +7,16 @@ from .models import User, Subscription
 class UserAdmin(admin.ModelAdmin):
     """Админ-модель пользователей"""
     list_display = (
-        'pk',
+        'id',
         'username',
         'email',
         'first_name',
         'last_name',
         'role'
     )
-    list_display_links = ('username',)
-    search_fields = ('username',)
-    list_filter = ('role',)
+    list_display_links = ('id', 'username',)
+    search_fields = ('username', 'email')
+    list_filter = ('username', 'email', 'role',)
     list_editable = (
         'email',
         'role',
@@ -31,7 +31,7 @@ class UserAdmin(admin.ModelAdmin):
 class SubscriptionAdmin(admin.ModelAdmin):
     """Админ-модель подписок"""
     list_display = (
-        'pk',
+        'id',
         'user',
         'author'
     )
