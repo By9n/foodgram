@@ -38,7 +38,7 @@ class RecipeMinifiedSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     """Serializer модели CustomUser"""
     is_subscribed = serializers.SerializerMethodField()
 
@@ -214,7 +214,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     ingredients = RecipeIngredientSerializer(many=True,
                                              source='recipe_ingredients')
     image = Base64ImageField()
-    author = CustomUserSerializer(read_only=True)
+    author = UserSerializer(read_only=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 

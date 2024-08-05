@@ -9,15 +9,11 @@ class Tag(models.Model):
     """Модель тегов"""
     name = models.CharField(
         verbose_name='Название тега',
-        max_length=200,
-    )
-    color = models.CharField(
-        verbose_name='HEX-цвет тега',
-        max_length=7,
+        max_length=32,
     )
     slug = models.SlugField(
         verbose_name='slug',
-        max_length=200,
+        max_length=32,
         unique=True,
     )
 
@@ -35,7 +31,7 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(
         Tag,
         verbose_name='Список тегов',
-        help_text='Выставите теги',
+        help_text='Поставьте теги',
     )
     author = models.ForeignKey(
         get_user_model(),
@@ -50,21 +46,27 @@ class Recipe(models.Model):
         through_fields=('recipe', 'ingredient'),
         help_text='Выберете ингредиенты'
     )
+    is_favorited = models.BooleanField(
+        verbose_name='Находится ли в избранном',
+        default=False,
+    )
+    is_in_shopping_cart = models.BooleanField(
+        verbose_name='Находится ли в корзине',
+        default=False,
+    )
     name = models.CharField(
         verbose_name='Название',
-        max_length=200,
+        max_length=256,
         help_text='Введите название рецепта'
     )
     image = models.ImageField(
         verbose_name='Ссылка на картинку на сайте',
-        upload_to='rescipes/',
-        blank=True,
+        upload_to='rescipes/image/',
         null=True,
         help_text='Загрузите картинку'
     )
     text = models.CharField(
         verbose_name='Описание',
-        max_length=250,
         help_text='Составьте описание'
     )
     cooking_time = models.PositiveIntegerField(
@@ -102,12 +104,12 @@ class Ingredient(models.Model):
     """Модель ингредиентов"""
     name = models.CharField(
         verbose_name='Название ингредиента',
-        max_length=200,
+        max_length=128,
         help_text='Введите название ингредиента'
     )
     measurement_unit = models.CharField(
         verbose_name='Единица измерения',
-        max_length=200,
+        max_length=64,
         help_text='Введите единицы измерения'
     )
 
@@ -143,7 +145,7 @@ class RecipeIngredient(models.Model):
                 'Количество не должно быть меньше 1'
             ),
             MaxValueValidator(
-                99_000,
+                666666,
                 'Количество не должно быть больше 99.000'
             )
         ],

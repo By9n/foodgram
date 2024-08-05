@@ -41,7 +41,6 @@ class User(AbstractUser):
     )
     is_subscribed = models.BooleanField(
         verbose_name='Подписаться на автора',
-        blank=True,
         default=False,
     )
     password = models.CharField(
@@ -54,7 +53,6 @@ class User(AbstractUser):
         max_length=ROLE_MAX_LENGTH,
         default=UserRoles.USER,
         choices=UserRoles.choices,
-        blank=True
     )
     following = models.ManyToManyField(
         "self",
