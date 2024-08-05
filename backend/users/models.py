@@ -63,6 +63,11 @@ class User(AbstractUser):
         symmetrical=False,
         related_name='following_relationships'
     )
+    image = models.ImageField(
+        upload_to='media/user/', 
+        null=True,  
+        default=None
+        )
 
     class Meta:
         verbose_name = 'Пользователь'
