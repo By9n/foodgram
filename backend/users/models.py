@@ -61,7 +61,7 @@ class User(AbstractUser):
         symmetrical=False,
         related_name='following_relationships'
     )
-    image = models.ImageField(
+    avatar = models.ImageField(
         upload_to='media/user/', 
         null=True,  
         default=None

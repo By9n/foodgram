@@ -67,6 +67,7 @@ class Recipe(models.Model):
     )
     text = models.CharField(
         verbose_name='Описание',
+        max_length=1256,
         help_text='Составьте описание'
     )
     cooking_time = models.PositiveIntegerField(
@@ -146,7 +147,7 @@ class RecipeIngredient(models.Model):
             ),
             MaxValueValidator(
                 666666,
-                'Количество не должно быть больше 99.000'
+                'Количество не должно быть больше 666666'
             )
         ],
     )

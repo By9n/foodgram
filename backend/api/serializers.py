@@ -1,4 +1,3 @@
-# api/serializers.py
 import base64
 import uuid
 
@@ -13,6 +12,7 @@ from users.models import CustomUser, Subscription
 
 class Base64ImageField(serializers.ImageField):
     """Serializer поля image"""
+
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
             img_format, img_str = data.split(';base64,')
@@ -65,11 +65,14 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
+    avatar = Base64ImageField()
 
     class Meta:
         model = Subscription
         fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', 'recipes', 'recipes_count')
+                  'last_name', 'is_subscribed', 'recipes', 'recipes_count',
+                  'avatar'
+                  )
 
     def get_is_subscribed(self, obj):
         user = self.context['request'].user
