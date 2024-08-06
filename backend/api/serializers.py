@@ -1,4 +1,3 @@
-# api/serializers.py
 import base64
 import uuid
 
@@ -13,6 +12,7 @@ from users.models import CustomUser, Subscription
 
 class Base64ImageField(serializers.ImageField):
     """Serializer поля image"""
+
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
             img_format, img_str = data.split(';base64,')
@@ -38,7 +38,7 @@ class RecipeMinifiedSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     """Serializer модели CustomUser"""
     is_subscribed = serializers.SerializerMethodField()
 
@@ -65,11 +65,14 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
+    avatar = Base64ImageField()
 
     class Meta:
         model = Subscription
         fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', 'recipes', 'recipes_count')
+                  'last_name', 'is_subscribed', 'recipes', 'recipes_count',
+                  'avatar'
+                  )
 
     def get_is_subscribed(self, obj):
         user = self.context['request'].user
@@ -214,7 +217,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     ingredients = RecipeIngredientSerializer(many=True,
                                              source='recipe_ingredients')
     image = Base64ImageField()
-    author = CustomUserSerializer(read_only=True)
+    author = UserSerializer(read_only=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 

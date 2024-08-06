@@ -15,9 +15,8 @@ class RecipeIngredientInline(admin.TabularInline):
 class TagAdmin(admin.ModelAdmin):
     """Админ-модель тегов"""
     list_display = (
-        'pk',
+        'id',
         'name',
-        'color',
         'slug'
     )
     list_display_links = ('name',)
@@ -30,7 +29,7 @@ class RecipeAdmin(admin.ModelAdmin):
     """Админ-модель рецептов"""
     inlines = (RecipeIngredientInline,)
     list_display = (
-        'pk',
+        'id',
         'pub_date',
         'name',
         'author',
@@ -55,7 +54,7 @@ class RecipeAdmin(admin.ModelAdmin):
 class IngredientAdmin(admin.ModelAdmin):
     """Админ-модель ингредиентов"""
     list_display = (
-        'pk',
+        'id',
         'name',
         'measurement_unit'
     )
@@ -71,7 +70,7 @@ class IngredientAdmin(admin.ModelAdmin):
 class FavoriteAdmin(admin.ModelAdmin):
     """Админ-модель избранного"""
     list_display = (
-        'pk',
+        'id',
         'user',
         'recipe'
     )
@@ -84,11 +83,10 @@ class FavoriteAdmin(admin.ModelAdmin):
 class ShoppingCartAdmin(admin.ModelAdmin):
     """Админ-модель списка покупок"""
     list_display = (
-        'pk',
+        'id',
         'user',
         'recipe'
     )
     list_editable = ('user', 'recipe')
     search_fields = ('user', 'recipe')
     empty_value_display = '-пусто-'
-
