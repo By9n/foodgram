@@ -1,12 +1,12 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-# from django.utils.translation import gettext_lazy as _
 
 from .constants import (
     USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH, ROLE_MAX_LENGTH,
     PASSWORD_MAX_LENGTH,
 )
 from .validators import (validate_correct_username, validate_username)
+
 
 class UserRoles(models.TextChoices):
     USER = "user"
@@ -16,16 +16,16 @@ class UserRoles(models.TextChoices):
 class User(AbstractUser):
     """Модель переопределенного пользователя"""
 
-    username = models.CharField(
-        verbose_name='Логин',
-        validators=[validate_correct_username, validate_username],
-        max_length=USERNAME_MAX_LENGTH,
-        unique=True,
-        blank=False
-    )
     email = models.EmailField(
         verbose_name='E-mail',
         max_length=EMAIL_MAX_LENGTH,
+        unique=True,
+        blank=False
+    )
+    username = models.CharField(
+        verbose_name='Юзернейм',
+        validators=[validate_correct_username, validate_username],
+        max_length=USERNAME_MAX_LENGTH,
         unique=True,
         blank=False
     )
@@ -62,10 +62,10 @@ class User(AbstractUser):
         related_name='following_relationships'
     )
     avatar = models.ImageField(
-        upload_to='media/user/', 
-        null=True,  
+        upload_to='media/user/',
+        null=True,
         default=None
-        )
+    )
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -88,7 +88,7 @@ class User(AbstractUser):
 
 
 class Subscription(models.Model):
-    """Модель подписок"""
+    """Модель подписот"""
     user = models.ForeignKey(
         User,
         verbose_name='Подписчик',
