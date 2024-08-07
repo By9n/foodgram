@@ -10,7 +10,7 @@ from recipes.models import (
 from users.models import Subscription, User
 
 
-class CustomUserCreateSerializer(UserCreateSerializer):
+class CreateustomUserSerializer(UserCreateSerializer):
     """ Сериализатор создания пользователя. """
 
     class Meta:
@@ -51,15 +51,15 @@ class CustomUserSerializer(UserSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
-    """ Сериализатор просмотра модели Тег. """
+    """ Сериализатор модели Тегов. """
 
     class Meta:
         model = Tag
-        fields = ['id', 'name', 'color', 'slug']
+        fields = ['id', 'name', 'slug']
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
-    """ Сериализатор модели, связывающей ингредиенты и рецепт. """
+    """ Сериализатор связывающей модели ингредиентов и рецептов. """
 
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
@@ -73,7 +73,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    """ Сериализатор просмотра модели Ингредиенты. """
+    """ Сериализатор модели Ингредиентов. """
 
     class Meta:
         model = Ingredient
@@ -81,7 +81,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    """ Сериализатор просмотра модели Рецепт. """
+    """ Сериализатор модели Рецептов. """
 
     tags = TagSerializer(many=True)
     author = CustomUserSerializer(read_only=True)
@@ -234,6 +234,13 @@ class ShowFavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ['id', 'name', 'image', 'cooking_time']
+
+
+class TagSerializer(serializers.ModelSerializer):
+    """Serializer модели Tag"""
+    class Meta:
+        model = Tag
+        fields = ('id', 'name', 'slug')
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
