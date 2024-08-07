@@ -8,6 +8,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.contrib.auth import authenticate
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
@@ -19,7 +20,32 @@ from .permissions import IsAuthorOrAdminOrReadOnly
 from .serializers import (CreateRecipeSerializer, FavoriteSerializer,
                           IngredientSerializer, RecipeSerializer,
                           ShoppingCartSerializer, ShowSubscriptionsSerializer,
-                          SubscriptionSerializer, TagSerializer)
+                          SubscriptionSerializer, TagSerializer, TokenCreateSerializer)
+
+
+class TokenCreateView(APIView):
+    """
+    Вьюсет для получения токена авторизации.
+    """
+    permission_classes = (AllowAny, )
+    serializer_class = TokenCreateSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            password = serializer.validated_data['password']
+            user = authenticate(email=email, password=password)
+
+            if user:
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({'auth_token': token.key},
+                                status=status.HTTP_201_CREATED)
+            return Response({'detail': 'Неверные учетные данные.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SubscribeView(APIView):

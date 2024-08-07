@@ -3,6 +3,9 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from users.models import User
+from .validators import  SlugValidator
+
+
 
 
 class Tag(models.Model):
@@ -13,6 +16,7 @@ class Tag(models.Model):
     )
     slug = models.SlugField(
         verbose_name='slug',
+        validators=[SlugValidator('^[-a-zA-Z0-9]+$')],
         max_length=32,
         unique=True,
     )

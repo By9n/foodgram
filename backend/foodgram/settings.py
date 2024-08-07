@@ -7,6 +7,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# try:
+#     load_dotenv()
+# except FileNotFoundError:
+#     raise FileNotFoundError('Не найден файл .env')
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # os.getenv('SECRET_KEY')
@@ -133,6 +138,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6,
+    'PAGE_SIZE_QUERY_PARAM' : 'limit',
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 
@@ -143,10 +149,11 @@ DJOSER = {
         'current_user': 'api.serializers.CustomUserSerializer',
     },
     'PERMISSIONS': {
-        'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
+        'user': ['rest_framework.permissions.AllowAny'],
         'user_list': ['rest_framework.permissions.AllowAny'],
     },
     'HIDE_USERS': False,
+    'LOGIN_FIELD': 'email'
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'

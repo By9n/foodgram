@@ -2,6 +2,7 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
+from django.contrib.auth import authenticate
 
 from recipes.models import (
     Favorite, Ingredient, Recipe, RecipeIngredient,
@@ -10,7 +11,24 @@ from recipes.models import (
 from users.models import Subscription, User
 
 
-class CreateustomUserSerializer(UserCreateSerializer):
+class TokenCreateSerializer(serializers.Serializer):
+    """Сериализатор для получения токена."""
+
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        user = authenticate(email=email, password=password)
+        if not user:
+            raise serializers.ValidationError('Неверные учетные данные.')
+
+        return attrs
+
+
+class CreateCustomUserSerializer(UserCreateSerializer):
     """ Сериализатор создания пользователя. """
 
     class Meta:
@@ -38,7 +56,8 @@ class CustomUserSerializer(UserSerializer):
             'username',
             'first_name',
             'last_name',
-            'is_subscribed'
+            'is_subscribed',
+            'avatar'
         ]
 
     def get_is_subscribed(self, obj):
