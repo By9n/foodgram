@@ -15,7 +15,7 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
 from users.models import Subscription, User
 
 from .filters import IngredientFilter, RecipeFilter
-# from .pagination import CustomPagination
+from .pagination import PageLimitPagination
 from .permissions import IsAuthorOrAdminOrReadOnly
 from .serializers import (CreateRecipeSerializer, FavoriteSerializer,
                           IngredientSerializer, RecipeSerializer,
@@ -79,11 +79,11 @@ class SubscribeView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class ShowSubscriptionsView(ListAPIView):
+class SubscriptionsView(ListAPIView):
     """ Отображение подписок. """
 
     permission_classes = [IsAuthenticated, ]
-    # pagination_class = CustomPagination
+    pagination_class = PageLimitPagination
 
     def get(self, request):
         user = request.user
@@ -99,7 +99,7 @@ class FavoriteView(APIView):
     """ Добавление/удаление рецепта из избранного. """
 
     permission_classes = [IsAuthenticated, ]
-    # pagination_class = CustomPagination
+    pagination_class = PageLimitPagination
 
     def post(self, request, id):
         data = {
@@ -150,7 +150,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """ Операции с рецептами: добавление/изменение/удаление/просмотр. """
 
     permission_classes = [IsAuthorOrAdminOrReadOnly, ]
-    # pagination_class = CustomPagination
+    pagination_class = PageLimitPagination
     queryset = Recipe.objects.all()
     filter_backends = [DjangoFilterBackend, ]
     filterset_class = RecipeFilter

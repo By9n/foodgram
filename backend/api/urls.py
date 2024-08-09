@@ -4,7 +4,7 @@ from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 
 from .views import (FavoriteView, IngredientViewSet, RecipeViewSet,
-                    ShoppingCartView, ShowSubscriptionsView, SubscribeView,
+                    ShoppingCartView, SubscriptionsView, SubscribeView,
                     TagViewSet, download_shopping_cart)
 
 app_name = 'api'
@@ -29,7 +29,7 @@ urlpatterns = [
     ),
     path(
         'users/subscriptions/',
-        ShowSubscriptionsView.as_view(),
+        SubscriptionsView.as_view(),
         name='subscriptions'
     ),
     path(

@@ -113,7 +113,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = [
-            'id',
+
             'tags',
             'author',
             'ingredients',
@@ -187,11 +187,11 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             amount = i['amount']
             if int(amount) < 1:
                 raise serializers.ValidationError({
-                   'amount': 'Количество ингредиента должно быть больше 0!'
+                    'amount': 'Количество ингредиента должно быть больше 0!'
                 })
             if i['id'] in list:
                 raise serializers.ValidationError({
-                   'ingredient': 'Ингредиенты должны быть уникальными!'
+                    'ingredient': 'Ингредиенты должны быть уникальными!'
                 })
             list.append(i['id'])
         return data
@@ -298,14 +298,15 @@ class ShowSubscriptionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id',
             'email',
+            'id',
             'username',
             'first_name',
             'last_name',
             'is_subscribed',
             'recipes',
-            'recipes_count'
+            'recipes_count',
+            'avatar'
         ]
 
     def get_is_subscribed(self, obj):

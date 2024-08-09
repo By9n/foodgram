@@ -3,7 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from users.models import User
-from .validators import  SlugValidator
+from .validators import  validateslug
 
 
 
@@ -16,7 +16,7 @@ class Tag(models.Model):
     )
     slug = models.SlugField(
         verbose_name='slug',
-        validators=[SlugValidator('^[-a-zA-Z0-9]+$')],
+        validators=[validateslug],
         max_length=32,
         unique=True,
     )
@@ -104,11 +104,13 @@ class Ingredient(models.Model):
     name = models.CharField(
         verbose_name='Название ингредиента',
         max_length=128,
+        blank=False,
         help_text='Введите название ингредиента'
     )
     measurement_unit = models.CharField(
         verbose_name='Единица измерения',
         max_length=64,
+        blank=False,
         help_text='Введите единицы измерения'
     )
 
