@@ -136,22 +136,33 @@ REST_FRAMEWORK = {
    'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    # 'PAGE_SIZE': 6,
-    # 'PAGE_SIZE_QUERY_PARAM' : 'limit',
+    'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageLimitPagination',
+    'PAGE_SIZE': 6,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 
 DJOSER = {
-    'SERIALIZERS': {
-        'user': 'api.serializers.CustomUserSerializer',
-        'user_create': 'api.serializers.CreateCustomUserSerializer',
-        'current_user': 'api.serializers.CustomUserSerializer',
-    },
-    'PERMISSIONS': {
-        'user': ['rest_framework.permissions.AllowAny'],
-        'user_list': ['rest_framework.permissions.AllowAny'],
-    },
+    # 'SERIALIZERS': {
+    # 'user': 'api.serializers.CustomUserSerializer',
+    # # 'current_user': 'api.serializers.CustomUserSerializer',
+    # 'user_list': 'api.serializers.CustomUserSerializer',
+    # 'user_create': 'api.serializers.CreateCustomUserSerializer',
+    # },
+    # 'PERMISSIONS': {
+    #     'user': ('api.permissions.AuthorOrStaffOrReadOnly',),
+    #     'user_list': ('rest_framework.permissions.AllowAny',),
+    #     # 'current_user': ('rest_framework.permissions.IsAuthenticated',),
+    # },
+    # 'SERIALIZERS': {
+    #     'user': 'api.serializers.CustomUserSerializer',
+    #     'user_create': 'api.serializers.CreateCustomUserSerializer',
+    #     'current_user': 'api.serializers.CustomUserSerializer',
+    #     'user_list' : ''
+    # },
+    # 'PERMISSIONS': {
+    #     'user': ['rest_framework.permissions.AllowAny'],
+    #     'user_list': ['rest_framework.permissions.AllowAny'],
+    # },
     'HIDE_USERS': False,
     'LOGIN_FIELD': 'email'
 }

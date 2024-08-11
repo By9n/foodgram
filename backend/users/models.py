@@ -39,10 +39,10 @@ class User(AbstractUser):
         max_length=USERNAME_MAX_LENGTH,
         blank=False
     )
-    is_subscribed = models.BooleanField(
-        verbose_name='Подписаться на автора',
-        default=False,
-    )
+    # is_subscribed = models.BooleanField(
+    #     verbose_name='Подписаться на автора',
+    #     default=False,
+    # )
     password = models.CharField(
         verbose_name='Пароль',
         max_length=PASSWORD_MAX_LENGTH,
