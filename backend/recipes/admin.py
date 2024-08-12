@@ -30,7 +30,6 @@ class RecipeAdmin(admin.ModelAdmin):
     inlines = (RecipeIngredientInline,)
     list_display = (
         'id',
-        'pub_date',
         'name',
         'author',
         'text',

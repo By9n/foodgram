@@ -7,6 +7,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# try:
+#     load_dotenv()
+# except FileNotFoundError:
+#     raise FileNotFoundError('Не найден файл .env')
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # os.getenv('SECRET_KEY')
@@ -27,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'django_filters',
     'djoser',
     'users.apps.UsersConfig',
     'api.apps.ApiConfig',
@@ -97,9 +103,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-RU'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -123,16 +129,41 @@ AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        "rest_framework.authentication.TokenAuthentication",
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+   'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageLimitPagination',
     'PAGE_SIZE': 6,
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 
 DJOSER = {
+    # 'SERIALIZERS': {
+    # 'user': 'api.serializers.CustomUserSerializer',
+    # # 'current_user': 'api.serializers.CustomUserSerializer',
+    # 'user_list': 'api.serializers.CustomUserSerializer',
+    # 'user_create': 'api.serializers.CreateCustomUserSerializer',
+    # },
+    # 'PERMISSIONS': {
+    #     'user': ('api.permissions.AuthorOrStaffOrReadOnly',),
+    #     'user_list': ('rest_framework.permissions.AllowAny',),
+    #     # 'current_user': ('rest_framework.permissions.IsAuthenticated',),
+    # },
+    # 'SERIALIZERS': {
+    #     'user': 'api.serializers.CustomUserSerializer',
+    #     'user_create': 'api.serializers.CreateCustomUserSerializer',
+    #     'current_user': 'api.serializers.CustomUserSerializer',
+    #     'user_list' : ''
+    # },
+    # 'PERMISSIONS': {
+    #     'user': ['rest_framework.permissions.AllowAny'],
+    #     'user_list': ['rest_framework.permissions.AllowAny'],
+    # },
+    'HIDE_USERS': False,
     'LOGIN_FIELD': 'email'
 }
 
