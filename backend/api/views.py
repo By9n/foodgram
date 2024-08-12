@@ -31,6 +31,7 @@ from .serializers import (
     CreateCustomUserSerializer, UserSubscriptionSerializer,
     AvatarUserSerializer
 )
+from .shopping_list import shopping_list
 
 
 class TokenCreateView(APIView):
@@ -298,6 +299,7 @@ class FavoriteView(APIView):
             'user': request.user.id,
             'recipe': id
         }
+        
         if not Favorite.objects.filter(
            user=request.user, recipe__id=id).exists():
             serializer = FavoriteSerializer(
@@ -356,6 +358,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         context = super().get_serializer_context()
         context.update({'request': self.request})
         return context
+    
+    @action(detail=False,
+                permission_classes=[IsAuthenticated])
+    def download_shopping_cart(self, request):
+        """Скачивание списка покупок."""
+        ingredients = ShoppingCart.ingredients_shopping_cart(request.user)
+        return shopping_list(ingredients)
 
 
 class ShoppingCartView(APIView):
@@ -391,22 +400,4 @@ class ShoppingCartView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
-def download_shopping_cart(request):
-    ingredient_list = "Cписок покупок:"
-    ingredients = RecipeIngredient.objects.filter(
-        recipe__shopping_cart__user=request.user
-    ).values(
-        'ingredient__name', 'ingredient__measurement_unit'
-    ).annotate(amount=Sum('amount'))
-    for num, i in enumerate(ingredients):
-        ingredient_list += (
-            f"\n{i['ingredient__name']} - "
-            f"{i['amount']} {i['ingredient__measurement_unit']}"
-        )
-        if num < ingredients.count() - 1:
-            ingredient_list += ', '
-    file = 'shopping_list'
-    response = HttpResponse(ingredient_list, 'Content-Type: application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{file}.pdf"'
-    return response
+    

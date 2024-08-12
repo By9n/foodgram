@@ -233,12 +233,22 @@ class ShoppingCart(models.Model):
     )
 
     class Meta:
+        default_related_name = 'shopping_carts'
         verbose_name = 'Корзина покупок'
+        verbose_name_plural = 'Корзины покупок'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
                 name='unique_shopping_cart')
         ]
+    
+    @staticmethod
+    def ingredients_shopping_cart(user):
+        return (RecipeIngredient.objects
+                .filter(recipe__shopping_carts__user=user)
+                .values('ingredient__name', 'ingredient__measurement_unit')
+                .order_by('ingredient__name')
+                .annotate(amount=models.Sum('amount')))
 
     def __str__(self):
         return f'{self.user} >> {self.recipe}'

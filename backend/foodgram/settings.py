@@ -174,3 +174,10 @@ EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+FONT_SIZE_TITLE = 16
+FONT_SIZE = 14
+INDENT_X = 100
+INDENT_Y = 700
+LINE_BREAK_SIZE = 15
+LINE_BREAK_SIZE_AFTER_TITLE = 20

@@ -228,6 +228,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = serializers.SerializerMethodField()
+    image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField(
         method_name='get_is_favorited')
     is_in_shopping_cart = serializers.SerializerMethodField(
@@ -406,9 +407,12 @@ class FavoriteSerializer(serializers.ModelSerializer):
         fields = ['user', 'recipe']
 
     def to_representation(self, instance):
-        return ShowFavoriteSerializer(instance.recipe, context={
-            'request': self.context.get('request')
-        }).data
+        return ShowFavoriteSerializer(
+            instance.recipe,
+            context={
+                'request': self.context.get('request')
+            }
+        ).data
 
 
 class ShowSubscriptionsSerializer(serializers.ModelSerializer):

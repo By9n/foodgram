@@ -5,20 +5,16 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (FavoriteView, IngredientViewSet, RecipeViewSet,
                     UserSubscriptionViewSet, ShoppingCartView, SubscriptionsView,
-                    SubscribeView, TagViewSet, download_shopping_cart,
-                    CustomUserViewSet
+                    SubscribeView, TagViewSet, CustomUserViewSet
                     )
 
 app_name = 'api'
 
 router = DefaultRouter()
 
-router.register('recipes', RecipeViewSet, basename='recipes')
-router.register('ingredients', IngredientViewSet, basename='ingredients')
-router.register('tags', TagViewSet, basename='tags')
-# router.register(r'users',
-#                 UserFollowViewSet,
-#                 basename='subscriptions'
+router.register(r'recipes', RecipeViewSet, basename='recipes')
+router.register(r'ingredients', IngredientViewSet, basename='ingredients')
+router.register(r'tags', TagViewSet, basename='tags')
 router.register(r'users', CustomUserViewSet, basename='subscriptions')
 urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),
@@ -44,11 +40,11 @@ urlpatterns = [
         ShoppingCartView.as_view(),
         name='shopping_cart'
     ),
-    path(
-        'recipes/download_shopping_cart/',
-        download_shopping_cart,
-        name='download_shopping_cart'
-    ),
+    # path(
+    #     'recipes/download_shopping_cart/',
+    #     download_shopping_cart,
+    #     name='download_shopping_cart'
+    # ),
 ]
 if settings.DEBUG:
     urlpatterns += static(
