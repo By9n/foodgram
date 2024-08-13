@@ -3,11 +3,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 
-from .views import (FavoriteView, IngredientViewSet, RecipeViewSet,
-                    UserSubscriptionViewSet, ShoppingCartView, SubscriptionsView,
-                    SubscribeView, TagViewSet, CustomUserViewSet
+from .views import (IngredientViewSet, RecipeViewSet,
+                    
+                    TagViewSet, CustomUserViewSet
                     )
-
+# UserSubscriptionViewSet, ShoppingCartView, SubscriptionsView, FavoriteView, SubscribeView
 app_name = 'api'
 
 router = DefaultRouter()
@@ -30,16 +30,16 @@ urlpatterns = [
     #     SubscriptionsView.as_view(),
     #     name='subscriptions'
     # ),
-    path(
-        'recipes/<int:id>/favorite/',
-        FavoriteView.as_view(),
-        name='favorite'
-    ),
-    path(
-        'recipes/<int:id>/shopping_cart/',
-        ShoppingCartView.as_view(),
-        name='shopping_cart'
-    ),
+    # path(
+    #     'recipes/<int:id>/favorite/',
+    #     FavoriteView.as_view(),
+    #     name='favorite'
+    # ),
+    # path(
+    #     'recipes/<int:id>/shopping_cart/',
+    #     ShoppingCartView.as_view(),
+    #     name='shopping_cart'
+    # ),
     # path(
     #     'recipes/download_shopping_cart/',
     #     download_shopping_cart,
