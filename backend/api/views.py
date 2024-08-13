@@ -17,7 +17,7 @@ from django.contrib.auth import authenticate
 from rest_framework.decorators import action
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingCart, Tag)
+                            ShoppingCart, Tag, RecipeShortLink)
 from users.models import Subscription, User
 
 from .filters import IngredientFilter, RecipeFilter
@@ -26,6 +26,7 @@ from .permissions import AuthorOrStaffOrReadOnly
 from .serializers import (
     CreateRecipeSerializer, FavoriteSerializer,
     IngredientSerializer, RecipeSerializer,
+    ShortLinkSerializer,
     ShoppingCartSerializer, ShowSubscriptionsSerializer,
     SubscriptionSerializer, TagSerializer, TokenCreateSerializer,
     RecipeMinifiedSerializer, CustomUserSerializer,
@@ -441,128 +442,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         file['Content-Disposition'] = (f'attachment; filename={'foodgram'}')
         return file
 
+@api_view(['GET'])
+def get_short_link(request, recipe_id):
+    """
+    Получение или создание короткой ссылки для рецепта.
+    """
+    try:
+        recipe = Recipe.objects.get(id=recipe_id)
+    except Recipe.DoesNotExist:
+        return Response({'detail': 'Рецепт не найден.'},
+                        status=status.HTTP_404_NOT_FOUND)
 
+    short_link, created = RecipeShortLink.objects.get_or_create(recipe=recipe)
 
-# class RecipeViewSet(viewsets.ModelViewSet):
-#     """Вьюсет рецептов."""
-#     queryset = Recipe.objects.all()
-#     serializer_class = RecipeSerializer
-#     pagination_class = PageLimitPagination
-#     permission_classes = (AuthorOrStaffOrReadOnly,)
-#     filter_backends = (DjangoFilterBackend,)
-#     filterset_class = RecipeFilter
-
-#     def perform_create(self, serializer):
-#         serializer.save(author=self.request.user)
-
-#     def get_serializer_class(self):
-#         if self.action in SAFE_METHODS:
-#             return super().get_serializer_class()
-#         return CreateRecipeSerializer
-
-#     def post_delete(self, request, pk, model, serializer_class):
-#         user = request.user
-#         recipe = get_object_or_404(Recipe, pk=pk)
-#         if request.method == 'POST':
-#             serializer = serializer_class(data={'user': user,
-#                                                 'recipe': recipe})
-#             serializer.is_valid(raise_exception=True)
-#             serializer.save(user=request.user,
-#                             recipe=recipe)
-#             return Response(serializer.data,
-#                                      status=status.HTTP_201_CREATED)
-#         if request.method == 'DELETE':
-#             instance = get_object_or_404(model,
-#                                          user=user,
-#                                          recipe=recipe)
-#             self.perform_destroy(instance)
-#             return Response(status=status.HTTP_204_NO_CONTENT)
-
-#     @action(detail=True,
-#             methods=['post', 'delete'],
-#             permission_classes=[IsAuthenticated])
-#     def favorite(self, request, pk):
-#         """Добавление/удаление рецепта из избранного."""
-#         return self.post_delete(
-#             request, pk, Favorite, FavoriteSerializer
-#         )
-
-#     @action(detail=True,
-#             methods=['post', 'delete'],
-#             permission_classes=[IsAuthenticated])
-#     def shopping_cart(self, request, pk):
-#         """Добавление/удаление рецепта из корзины."""
-#         return self.post_delete(
-#             request, pk, ShoppingCart, ShoppingCartSerializer
-#         )
-
-#     @action(detail=False,
-#             permission_classes=[IsAuthenticated])
-#     def download_shopping_cart(self, request):
-#         """Скачивание списка покупок."""
-#         ingredients = ShoppingCart.ingredients_shopping_cart(request.user)
-#         return shopping_list(ingredients)
-
-
-
-# class RecipeViewSet(viewsets.ModelViewSet):
-#     """ Операции с рецептами: добавление/изменение/удаление/просмотр. """
-
-#     permission_classes = [AuthorOrStaffOrReadOnly, ]
-#     pagination_class = PageLimitPagination
-#     queryset = Recipe.objects.all()
-#     filter_backends = [DjangoFilterBackend, ]
-#     filterset_class = RecipeFilter
-
-#     def get_serializer_class(self):
-#         if self.request.method == 'GET':
-#             return RecipeSerializer
-#         return CreateRecipeSerializer
-
-#     def get_serializer_context(self):
-#         context = super().get_serializer_context()
-#         context.update({'request': self.request})
-#         return context
-    
-#     @action(detail=False,
-#                 permission_classes=[IsAuthenticated])
-#     def download_shopping_cart(self, request):
-#         """Скачивание списка покупок."""
-#         ingredients = ShoppingCart.ingredients_shopping_cart(request.user)
-#         return shopping_list(ingredients)
-
-
-# class ShoppingCartView(APIView):
-#     """ Добавление рецепта в корзину или его удаление. """
-
-#     permission_classes = [IsAuthenticated, ]
-
-#     def post(self, request, id):
-#         data = {
-#             'user': request.user.id,
-#             'recipe': id
-#         }
-#         recipe = get_object_or_404(Recipe, id=id)
-#         if not ShoppingCart.objects.filter(
-#            user=request.user, recipe=recipe).exists():
-#             serializer = ShoppingCartSerializer(
-#                 data=data, context={'request': request}
-#             )
-#             if serializer.is_valid():
-#                 serializer.save()
-#                 return Response(
-#                     serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(status=status.HTTP_400_BAD_REQUEST)
-
-#     def delete(self, request, id):
-#         recipe = get_object_or_404(Recipe, id=id)
-#         if ShoppingCart.objects.filter(
-#            user=request.user, recipe=recipe).exists():
-#             ShoppingCart.objects.filter(
-#                 user=request.user, recipe=recipe
-#             ).delete()
-#             return Response(status=status.HTTP_204_NO_CONTENT)
-#         return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-    
+    serializer = ShortLinkSerializer(short_link)
+    return Response(serializer.data, status=status.HTTP_200_OK)

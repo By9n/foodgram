@@ -4,7 +4,7 @@ from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 
 from .views import (IngredientViewSet, RecipeViewSet,
-                    
+                    get_short_link,
                     TagViewSet, CustomUserViewSet
                     )
 # UserSubscriptionViewSet, ShoppingCartView, SubscriptionsView, FavoriteView, SubscribeView
@@ -20,6 +20,7 @@ urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),
     path('', include('djoser.urls')),
     path('', include(router.urls)),
+    path('recipes/<int:recipe_id>/get-link/', get_short_link, name='get-link'),
     # path(
     #     'users/<int:id>/subscribe/',
     #     SubscribeView.as_view(),
@@ -46,8 +47,3 @@ urlpatterns = [
     #     name='download_shopping_cart'
     # ),
 ]
-if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL,
-        document_root=settings.MEDIA_ROOT
-    )
