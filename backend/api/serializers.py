@@ -14,6 +14,7 @@ from recipes.models import (
     RecipeTag, ShoppingCart, Tag, RecipeShortLink
 )
 from users.models import Subscription, User
+from .validators import validate_tags
 
 
 class TokenCreateSerializer(serializers.Serializer):
@@ -333,18 +334,19 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         tags = self.initial_data.get('tags')
-        if not tags:
-            raise serializers.ValidationError(
-                'Нужен хотя бы один тэг для рецепта!')
-        tags_list = []
-        for tag_name in tags:
-            if not Tag.objects.filter(name=tag_name).exists():
-                raise serializers.ValidationError(
-                    f'Тэга {tag_name} не существует!')
-            if tag_name in tags_list:
-                raise serializers.ValidationError('Тэг должен '
-                                                  'быть уникальным')
-            tags_list.append(tag_name)
+        tags = validate_tags(tags)
+        # if not tags:
+        #     raise serializers.ValidationError(
+        #         'Нужен хотя бы один тэг для рецепта!')
+        # tags_list = []
+        # for tag_name in tags:
+        #     if not Tag.objects.filter(name=tag_name).exists():
+        #         raise serializers.ValidationError(
+        #             f'Тэга {tag_name} не существует!')
+        #     if tag_name in tags_list:
+        #         raise serializers.ValidationError('Тэг должен '
+        #                                           'быть уникальным')
+        #     tags_list.append(tag_name)
         
         ingredients = self.initial_data.get('ingredients')
         if not ingredients:
@@ -410,6 +412,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
+        
         author = self.context.get('request').user
         recipe = Recipe.objects.create(author=author, **validated_data)
         self.create_ingredients(ingredients, recipe)
