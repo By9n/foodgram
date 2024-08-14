@@ -464,13 +464,13 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
     """ Сериализатор для списка покупок. """
 
     class Meta:
-        model = ShoppingCart
-        fields = ['user', 'recipe']
+        model = Recipe
+        fields = ['id', 'name', 'image', 'cooking_time']
 
-    def to_representation(self, instance):
-        return ShowFavoriteSerializer(instance.recipe, context={
-            'request': self.context.get('request')
-        }).data
+    # def to_representation(self, instance):
+    #     return ShowFavoriteSerializer(instance.recipe, context={
+    #         'request': self.context.get('request')
+    #     }).data
 
 
 class FavoriteSerializer(serializers.ModelSerializer):

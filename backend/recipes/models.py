@@ -52,10 +52,10 @@ class Recipe(models.Model):
         through_fields=('recipe', 'ingredient'),
         help_text='Выберете ингредиенты'
     )
-    is_favorited = models.BooleanField(
-        verbose_name='Находится ли в избранном',
-        default=False,
-    )
+    # is_favorited = models.BooleanField(
+    #     verbose_name='Находится ли в избранном',
+    #     default=False,
+    # )
     is_in_shopping_cart = models.BooleanField(
         verbose_name='Находится ли в корзине',
         default=False,
@@ -244,13 +244,13 @@ class ShoppingCart(models.Model):
                 name='unique_shopping_cart')
         ]
     
-    @staticmethod
-    def ingredients_shopping_cart(user):
-        return (RecipeIngredient.objects
-                .filter(recipe__shopping_carts__user=user)
-                .values('ingredient__name', 'ingredient__measurement_unit')
-                .order_by('ingredient__name')
-                .annotate(amount=models.Sum('amount')))
+    # @staticmethod
+    # def ingredients_shopping_cart(user):
+    #     return (RecipeIngredient.objects
+    #             .filter(recipe__shopping_carts__user=user)
+    #             .values('ingredient__name', 'ingredient__measurement_unit')
+    #             .order_by('ingredient__name')
+    #             .annotate(amount=models.Sum('amount')))
 
     def __str__(self):
         return f'{self.user} >> {self.recipe}'

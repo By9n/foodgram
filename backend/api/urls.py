@@ -21,6 +21,16 @@ urlpatterns = [
     path('', include('djoser.urls')),
     path('', include(router.urls)),
     path('recipes/<int:recipe_id>/get-link/', get_short_link, name='get-link'),
+    #     path(
+    #     'recipes/download_shopping_cart/',
+    #     get_download_shopping_cart,
+    #     name='download_shopping_cart'
+    # ),
+    # path(
+    #     'recipes/<str:id>/shopping_cart/',
+    #     ShoppingCartView.as_view(),
+    #     name='shopping_cart'
+    # ),
     # path(
     #     'users/<int:id>/subscribe/',
     #     SubscribeView.as_view(),

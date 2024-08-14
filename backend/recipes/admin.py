@@ -32,7 +32,6 @@ class RecipeAdmin(admin.ModelAdmin):
         'id',
         'name',
         'author',
-        'text',
         'image'
     )
     list_display_links = ('name',)
@@ -47,6 +46,10 @@ class RecipeAdmin(admin.ModelAdmin):
     )
     list_filter = ('tags',)
     empty_value_display = '-пусто-'
+
+    # @admin.display(description='В избранном')
+    # def in_favorited(self, obj):
+    #     return obj.in_favorite.count()
 
 
 @admin.register(Ingredient)
