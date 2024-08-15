@@ -314,7 +314,8 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     ingredients = AddIngredientRecipeSerializer(many=True)
     tags = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(), many=True
+        queryset=Tag.objects.all(),
+        many=True
     )
     image = Base64ImageField(required=True)
 
@@ -325,8 +326,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             'tags',
             'author',
             'ingredients',
-            'is_favorited',
-            'is_in_shopping_cart',
             'name',
             'image',
             'text',
@@ -336,19 +335,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     def validate(self, data):
         tags = self.initial_data.get('tags')
         tags = validate_tags(tags)
-        # if not tags:
-        #     raise serializers.ValidationError(
-        #         'Нужен хотя бы один тэг для рецепта!')
-        # tags_list = []
-        # for tag_name in tags:
-        #     if not Tag.objects.filter(name=tag_name).exists():
-        #         raise serializers.ValidationError(
-        #             f'Тэга {tag_name} не существует!')
-        #     if tag_name in tags_list:
-        #         raise serializers.ValidationError('Тэг должен '
-        #                                           'быть уникальным')
-        #     tags_list.append(tag_name)
-        
         ingredients = self.initial_data.get('ingredients')
         if not ingredients:
             raise serializers.ValidationError({
@@ -364,8 +350,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                     'ingredients': ('Убедитесь, что такой '
                                     'ингредиент существует')
                 })
-            # ingredient = get_object_or_404(Ingredient,
-            #                                id=ingredient_item['id'])
             if ingredient in ingredient_list:
                 raise serializers.ValidationError('Ингридиенты должны '
                                                   'быть уникальными')
@@ -377,22 +361,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                 })
         data['ingredients'] = ingredients
         return data
-
-    # def validate(self, data):
-    #     ingredients = self.initial_data.get('ingredients')
-    #     list = []
-    #     for i in ingredients:
-    #         amount = i['amount']
-    #         if int(amount) < 1:
-    #             raise serializers.ValidationError({
-    #                 'amount': 'Количество ингредиента должно быть больше 0!'
-    #             })
-    #         if i['id'] in list:
-    #             raise serializers.ValidationError({
-    #                 'ingredient': 'Ингредиенты должны быть уникальными!'
-    #             })
-    #         list.append(i['id'])
-    #     return data
 
     def create_ingredients(self, ingredients, recipe):
         for i in ingredients:
@@ -445,16 +413,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             'request': self.context.get('request')
         }).data
 
-
-class RecipeResponseSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для ответа при добавлении рецепта.
-    в список покупок или избранное.
-    """
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class ShowFavoriteSerializer(serializers.ModelSerializer):
@@ -552,8 +510,17 @@ class SubscriptionSerializer(UserSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name',
-                  'is_subscribed', 'recipes', 'recipes_count', 'avatar')
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count',
+            'avatar'
+        )
 
     def get_recipes(self, object):
         request = self.context['request']
