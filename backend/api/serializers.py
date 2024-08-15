@@ -12,6 +12,7 @@ from django.http import Http404
 from recipes.models import (
     Favorite, Ingredient, Recipe, RecipeIngredient,
     RecipeTag, ShoppingCart, Tag, RecipeShortLink
+    
 )
 from users.models import Subscription, User
 from .validators import validate_tags
@@ -445,6 +446,17 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         }).data
 
 
+class RecipeResponseSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для ответа при добавлении рецепта.
+    в список покупок или избранное.
+    """
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
 class ShowFavoriteSerializer(serializers.ModelSerializer):
     """ Сериализатор для отображения избранного. """
 
@@ -532,20 +544,31 @@ class ShowSubscriptionsSerializer(serializers.ModelSerializer):
         return Recipe.objects.filter(author=obj).count()
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
-    """ Сериализатор подписок. """
+class SubscriptionSerializer(UserSerializer):
+    """Получение подписок пользователя."""
+
+    recipes = serializers.SerializerMethodField(read_only=True)
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = Subscription
-        fields = ['user', 'author']
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Subscription.objects.all(),
-                fields=['user', 'author'],
-            )
-        ]
+        model = User
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'is_subscribed', 'recipes', 'recipes_count', 'avatar')
 
-    def to_representation(self, instance):
-        return ShowSubscriptionsSerializer(instance.author, context={
-            'request': self.context.get('request')
-        }).data
+    def get_recipes(self, object):
+        request = self.context['request']
+        limit = request.GET.get('recipes_limit')
+        recipes = Recipe.objects.filter(author=object)
+        if limit:
+            recipes = recipes[:int(limit)]
+        serializer = RecipeResponseSerializer(recipes, many=True)
+        return serializer.data
+
+    def get_recipes_count(self, object):
+        return object.recipes.count()
+
+    def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return Subscription.objects.filter(user=user, author=obj).exists()

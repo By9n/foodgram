@@ -7,19 +7,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# try:
-#     load_dotenv()
-# except FileNotFoundError:
-#     raise FileNotFoundError('Не найден файл .env')
+try:
+    load_dotenv()
+except FileNotFoundError:
+    raise FileNotFoundError('Не найден файл .env')
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# os.getenv('SECRET_KEY')
-SECRET_KEY = 'django-insecure-5!-o_bn_df4_0elbfsdl5l)n&fu5d0l7@l8&el2=hjtm3n&xy7'
-
-DEBUG = True  # os.getenv('DEBUG') == 'True'
-
-ALLOWED_HOSTS = []  # os.environ['ALLOWED_HOSTS'].split(',')
+SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = os.getenv('DEBUG') == 'True'
+ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(',')
 
 # Application definition
 
@@ -157,7 +154,6 @@ DJOSER = {
     #     'user': 'api.serializers.CustomUserSerializer',
     #     'user_create': 'api.serializers.CreateCustomUserSerializer',
     #     'current_user': 'api.serializers.CustomUserSerializer',
-    #     'user_list' : ''
     # },
     # 'PERMISSIONS': {
     #     'user': ['rest_framework.permissions.AllowAny'],

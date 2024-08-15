@@ -39,11 +39,7 @@ class User(AbstractUser):
         max_length=USERNAME_MAX_LENGTH,
         blank=False
     )
-    # is_subscribed = models.BooleanField(
-    #     verbose_name='Подписаться на автора',
-    #     default=False,
-    # )
-    password = models.CharField(
+    word = models.CharField(
         verbose_name='Пароль',
         max_length=PASSWORD_MAX_LENGTH,
         blank=False,
@@ -54,15 +50,9 @@ class User(AbstractUser):
         default=UserRoles.USER,
         choices=UserRoles.choices,
     )
-    following = models.ManyToManyField(
-        "self",
-        through='Subscription',
-        through_fields=('user', 'author'),
-        symmetrical=False,
-        related_name='following_relationships'
-    )
     avatar = models.ImageField(
-        upload_to='media/user/',
+        verbose_name='Аватар',
+        upload_to='user/',
         null=True,
         default=None
     )

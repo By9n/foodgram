@@ -6,6 +6,9 @@ from django.db import models
 
 from users.models import User
 from .validators import  validateslug
+from .constants import (
+    MAX_LENGTH_NAME_RECIPE, MAX_LENGTH_TAG, 
+)
 
 
 
@@ -14,12 +17,14 @@ class Tag(models.Model):
     """Модель тегов"""
     name = models.CharField(
         verbose_name='Название тега',
-        max_length=32,
+        max_length=MAX_LENGTH_TAG,
+        unique=True,
+        blank=False,
     )
     slug = models.SlugField(
         verbose_name='slug',
         validators=[validateslug],
-        max_length=32,
+        max_length=MAX_LENGTH_TAG,
         unique=True,
     )
 
@@ -52,17 +57,9 @@ class Recipe(models.Model):
         through_fields=('recipe', 'ingredient'),
         help_text='Выберете ингредиенты'
     )
-    # is_favorited = models.BooleanField(
-    #     verbose_name='Находится ли в избранном',
-    #     default=False,
-    # )
-    is_in_shopping_cart = models.BooleanField(
-        verbose_name='Находится ли в корзине',
-        default=False,
-    )
     name = models.CharField(
         verbose_name='Название',
-        max_length=256,
+        max_length=MAX_LENGTH_NAME_RECIPE,
         help_text='Введите название рецепта'
     )
     image = models.ImageField(
@@ -244,20 +241,12 @@ class ShoppingCart(models.Model):
                 name='unique_shopping_cart')
         ]
     
-    # @staticmethod
-    # def ingredients_shopping_cart(user):
-    #     return (RecipeIngredient.objects
-    #             .filter(recipe__shopping_carts__user=user)
-    #             .values('ingredient__name', 'ingredient__measurement_unit')
-    #             .order_by('ingredient__name')
-    #             .annotate(amount=models.Sum('amount')))
-
     def __str__(self):
         return f'{self.user} >> {self.recipe}'
 
 
 class RecipeShortLink(models.Model):
-    """Модель для хранения коротких ссылок на рецепты."""
+    """Модель коротких ссылок на рецепты."""
 
     recipe = models.OneToOneField(Recipe, on_delete=models.CASCADE,
                                   related_name='short_link')
@@ -270,7 +259,6 @@ class RecipeShortLink(models.Model):
         super().save(*args, **kwargs)
 
     def generate_short_link(self):
-        """Генерирует уникальную короткую ссылку."""
         length = 3
         characters = string.ascii_letters + string.digits
         while True:

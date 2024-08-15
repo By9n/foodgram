@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 
 from .models import (
     Favorite, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag,
@@ -24,33 +25,51 @@ class TagAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(Recipe)
-class RecipeAdmin(admin.ModelAdmin):
-    """Админ-модель рецептов"""
-    inlines = (RecipeIngredientInline,)
-    list_display = (
-        'id',
-        'name',
-        'author',
-        'image'
-    )
-    list_display_links = ('name',)
-    search_fields = (
-        'name',
-        'author',
-        'text',
-        'ingredients'
-    )
-    list_editable = (
-        'author',
-    )
-    list_filter = ('tags',)
-    empty_value_display = '-пусто-'
+# @admin.register(Recipe)
+# class RecipeAdmin(admin.ModelAdmin):
+#     """Админ-модель рецептов"""
+#     inlines = (RecipeIngredientInline,)
+#     list_display = (
+#         'id',
+#         'name',
+#         'author',
+#         'image'
+#     )
+#     list_display_links = ('name',)
+#     search_fields = (
+#         'name',
+#         'author',
+#         'text',
+#         'ingredients'
+#     )
+#     list_editable = (
+#         'author',
+#     )
+#     list_filter = ('tags',)
+#     empty_value_display = '-пусто-'
 
     # @admin.display(description='В избранном')
     # def in_favorited(self, obj):
     #     return obj.in_favorite.count()
+@admin.register(Recipe)
+class RecipeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'author', 'image_tag')
+    search_fields = ('name', 'author__username', 'author__email')
+    list_filter = ('tags',)
+    ordering = ('-id',)
 
+    def image_tag(self, obj):
+        if obj.image:
+            return mark_safe('<img src="{}" width="150"'
+                             'height="100" />'.format(obj.image.url))
+        return None
+
+    image_tag.short_description = 'Фото рецепта'
+
+    # @admin.display(description='Количество рецептов в избранном')
+    # def favorites_count(self, obj):
+    #     """Возвращает количество добавлений рецепта в избранное."""
+    #     return obj.users_recipes.count()
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
