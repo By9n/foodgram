@@ -1,20 +1,14 @@
+from django.contrib.auth import authenticate
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
-# from drf_extra_fields.fields import Base64ImageField
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
-from django.shortcuts import get_object_or_404
-from rest_framework.validators import UniqueTogetherValidator
-from django.contrib.auth import authenticate
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponseBadRequest
-from django.http import Http404
 
-from recipes.models import (
-    Favorite, Ingredient, Recipe, RecipeIngredient,
-    RecipeTag, ShoppingCart, Tag, RecipeShortLink
-
-)
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            RecipeShortLink, RecipeTag, ShoppingCart, Tag)
 from users.models import Subscription, User
+
 from .validators import validate_tags
 
 
@@ -27,7 +21,6 @@ class TokenCreateSerializer(serializers.Serializer):
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
-
         user = authenticate(email=email, password=password)
         if not user:
             raise serializers.ValidationError('Неверные учетные данные.')
@@ -219,9 +212,6 @@ class RecipeMinifiedSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
-
-
-
 class TagSerializer(serializers.ModelSerializer):
     """ Сериализатор модели Тегов. """
 
@@ -349,7 +339,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                 ingredient = get_object_or_404(Ingredient,
                                                id=ingredient_item['id']
                                                )
-            except Http404 as e:
+            except Http404:
                 raise serializers.ValidationError({
                     'ingredients': ('Убедитесь, что такой '
                                     'ингредиент существует')
