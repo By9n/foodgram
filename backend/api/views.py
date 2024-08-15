@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.serializers import SetPasswordSerializer
 from djoser.views import UserViewSet
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, filters, permissions
 from rest_framework.decorators import api_view
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import (
@@ -61,6 +61,22 @@ class TokenCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class SubscriptionListView(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet для генерации списка подписок пользователя.
+    """
+    queryset = User.objects.all()
+    serializer_class = SubscriptionSerializer
+    pagination_class = PageLimitPagination
+    filter_backends = (filters.SearchFilter,)
+    permission_classes = (permissions.IsAuthenticated,)
+    search_fields = ('^following__user',)
+
+    def get_queryset(self):
+        user = self.request.user
+        new_queryset = User.objects.filter(following__user=user)
+        return new_queryset
+
 class CustomUserViewSet(UserViewSet):
     """ViewSet модели пользователей"""
 
@@ -76,7 +92,7 @@ class CustomUserViewSet(UserViewSet):
             permission_classes=[IsAuthenticated])
     def avatar(self, request, *args, **kwargs):
         """
-        Добавление или обновление аватара текущего пользователя.
+        Добавление\обновление аватара пользователя.
         """
         user = request.user
         serializer = AvatarUserSerializer(user, data=request.data)
@@ -95,7 +111,7 @@ class CustomUserViewSet(UserViewSet):
     @avatar.mapping.delete
     def delete_avatar(self, request, *args, **kwargs):
         """
-        Удаление аватара текущего пользователя.
+        Удаление аватара пользователя.
         """
         user = request.user
         if user.avatar:
@@ -107,11 +123,13 @@ class CustomUserViewSet(UserViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    @action(detail=False)
+    @action(
+            detail=False,
+            permission_classes=[IsAuthenticated]
+    )
     def subscriptions(self, request):
-        """Просмотр подписок пользователя."""
-        user = self.request.user
-        subscriptions = User.objects.filter(following__user=user)
+        """Просмотр листа подписок пользователя."""
+        subscriptions = User.objects.filter(subscribers=self.request.user)
         list = self.paginate_queryset(subscriptions)
         serializer = SubscriptionSerializer(
             list, many=True, context={'request': request}

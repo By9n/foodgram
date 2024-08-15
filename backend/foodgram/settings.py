@@ -142,23 +142,13 @@ DJOSER = {
     'SERIALIZERS': {
     'user': 'api.serializers.CustomUserSerializer',
     'current_user': 'api.serializers.CustomUserSerializer',
-    'user_list': 'api.serializers.CustomUserSerializer',
     'user_create': 'api.serializers.CreateCustomUserSerializer',
     },
     'PERMISSIONS': {
         'user': ('api.permissions.AuthorOrStaffOrReadOnly',),
         'user_list': ('rest_framework.permissions.AllowAny',),
-        'current_user': ('rest_framework.permissions.IsAuthenticated',),
+        'current_user': ('api.permissions.AuthorOrStaffOrReadOnly',)
     },
-    # 'SERIALIZERS': {
-    #     'user': 'api.serializers.CustomUserSerializer',
-    #     'user_create': 'api.serializers.CreateCustomUserSerializer',
-    #     'current_user': 'api.serializers.CustomUserSerializer',
-    # },
-    # 'PERMISSIONS': {
-    #     'user': ['rest_framework.permissions.AllowAny'],
-    #     'user_list': ['rest_framework.permissions.AllowAny'],
-    # },
     'HIDE_USERS': False,
     'LOGIN_FIELD': 'email'
 }
@@ -170,10 +160,3 @@ EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-FONT_SIZE_TITLE = 16
-FONT_SIZE = 14
-INDENT_X = 100
-INDENT_Y = 700
-LINE_BREAK_SIZE = 15
-LINE_BREAK_SIZE_AFTER_TITLE = 20

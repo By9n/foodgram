@@ -4,7 +4,7 @@ from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 
 from .views import (IngredientViewSet, RecipeViewSet,
-                    get_short_link,
+                    get_short_link, SubscriptionListView,
                     TagViewSet, CustomUserViewSet
                     )
 # UserSubscriptionViewSet, ShoppingCartView, SubscriptionsView, FavoriteView, SubscribeView
@@ -16,6 +16,11 @@ router.register(r'recipes', RecipeViewSet, basename='recipes')
 router.register(r'ingredients', IngredientViewSet, basename='ingredients')
 router.register(r'tags', TagViewSet, basename='tags')
 router.register(r'users', CustomUserViewSet, basename='subscriptions')
+router.register(
+    r'users/subscriptions',
+    SubscriptionListView,
+    basename='subscriptions',
+)
 urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),
     path('', include('djoser.urls')),

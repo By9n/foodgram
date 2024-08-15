@@ -12,7 +12,8 @@ class UserAdmin(admin.ModelAdmin):
         'email',
         'first_name',
         'last_name',
-        'role'
+        'role',
+        'avatar'
     )
     list_display_links = ('id', 'username',)
     search_fields = ('username', 'email')
