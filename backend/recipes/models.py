@@ -232,7 +232,6 @@ class ShoppingCart(models.Model):
     )
 
     class Meta:
-        default_related_name = 'shopping_carts'
         verbose_name = 'Корзина покупок'
         verbose_name_plural = 'Корзины покупок'
         constraints = [

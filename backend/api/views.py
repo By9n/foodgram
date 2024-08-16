@@ -1,38 +1,40 @@
+import io
+
+from django.apps import apps
+from django.contrib.auth import authenticate
 from django.db.models import Sum
-from django.http import HttpResponse
+from django.db.models.aggregates import Sum
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.serializers import SetPasswordSerializer
 from djoser.views import UserViewSet
-from rest_framework import status, viewsets, filters, permissions
-from rest_framework.decorators import api_view
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            RecipeShortLink, ShoppingCart, Tag)
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
+from rest_framework import filters, permissions, status, viewsets
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action, api_view
 from rest_framework.generics import ListAPIView
-from rest_framework.permissions import (
-    AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, SAFE_METHODS
-
-)
+from rest_framework.permissions import (SAFE_METHODS, AllowAny,
+                                        IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth import authenticate
-from rest_framework.decorators import action
-
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingCart, Tag, RecipeShortLink)
 from users.models import Subscription, User
 
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import PageLimitPagination
 from .permissions import AuthorOrStaffOrReadOnly
-from .serializers import (
-    CreateRecipeSerializer, FavoriteSerializer,
-    IngredientSerializer, RecipeSerializer,
-    ShortLinkSerializer,
-    ShoppingCartSerializer, ShowSubscriptionsSerializer,
-    SubscriptionSerializer, TagSerializer, TokenCreateSerializer,
-    ShowFavoriteSerializer, CustomUserSerializer,
-    CreateCustomUserSerializer,
-    AvatarUserSerializer
-)
+from .serializers import (AvatarUserSerializer, CreateCustomUserSerializer,
+                          CreateRecipeSerializer, CustomUserSerializer,
+                          FavoriteSerializer, IngredientSerializer,
+                          RecipeSerializer, ShoppingCartSerializer,
+                          ShortLinkSerializer, ShowFavoriteSerializer,
+                          SubscriptionSerializer, TagSerializer,
+                          TokenCreateSerializer)
 from .shopping_list import shopping_list
 
 
@@ -59,46 +61,52 @@ class TokenCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SubscriptionListView(viewsets.ReadOnlyModelViewSet):
-    """ViewSet для генерации списка подписок пользователя."""
-    queryset = User.objects.all()
-    serializer_class = SubscriptionSerializer
-    pagination_class = PageLimitPagination
-    filter_backends = (filters.SearchFilter,)
-    permission_classes = (permissions.IsAuthenticated,)
-    search_fields = ('^following__user',)
-
-    def get_queryset(self):
-        user = self.request.user
-        new_queryset = User.objects.filter(following__user=user)
-        return new_queryset
-
-
 class CustomUserViewSet(UserViewSet):
     """ViewSet модели пользователей"""
 
     queryset = User.objects.all()
     pagination_class = PageLimitPagination
 
+
     def get_permissions(self):
-        if self.action in ('list', 'retrieve'):
-            return (AllowAny(),)
+        if self.action in ('create', 'retrieve', 'list'):
+            self.permission_classes = (AllowAny, )
+        else:
+            self.permission_classes = (IsAuthenticatedOrReadOnly, )
         return super().get_permissions()
 
-    @action(detail=False, methods=['get'],
-            pagination_class=None,
-            permission_classes=(IsAuthenticated,))
-    def me(self, request):
-        if not request.user or request.user.is_anonymous:
-            return False
-        serializer = CustomUserSerializer(request.user)
-        return Response(serializer.data,
-                        status=status.HTTP_200_OK)
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CreateCustomUserSerializer
+        elif self.action == 'retrieve':
+            return CustomUserSerializer
+        elif self.action == 'list':
+            return CustomUserSerializer
+        return super().get_serializer_class()
+
+    @action(methods=['get'], detail=False,
+            permission_classes=[IsAuthenticated])
+    def me(self, request, *args, **kwargs):
+        """
+        Получение информации о текущем аутентифицированном пользователе.
+        """
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+
+
+    # def get_permissions(self, request):
+    #     if self.action in ('create', 'list'):
+    #         self.permission_classes = (AllowAny,)
+    #     else:
+    #         self.permission_classes = (IsAuthenticated,)
+    #     return super().get_permissions()
 
     @action(detail=False, methods=['put'], url_path='me/avatar',
             permission_classes=[IsAuthenticated])
     def avatar(self, request, *args, **kwargs):
-        """Добавление\обновление аватара пользователя."""
         user = request.user
         serializer = AvatarUserSerializer(user, data=request.data)
 
@@ -115,7 +123,6 @@ class CustomUserViewSet(UserViewSet):
 
     @avatar.mapping.delete
     def delete_avatar(self, request, *args, **kwargs):
-        """Удаление аватара пользователя."""
         user = request.user
         if user.avatar:
             user.avatar.delete()
@@ -127,17 +134,24 @@ class CustomUserViewSet(UserViewSet):
         )
 
     @action(
-        detail=False,
-        permission_classes=[IsAuthenticated]
+        detail=False, methods=['GET']  # , permission_classes=[IsAuthenticated], 
     )
-    def subscriptions(self, request):
-        """Просмотр листа подписок пользователя."""
-        subscriptions = User.objects.filter(subscribers=self.request.user)
-        list = self.paginate_queryset(subscriptions)
-        serializer = SubscriptionSerializer(
-            list, many=True, context={'request': request}
-        )
-        return self.get_paginated_response(serializer.data)
+    def subscriptions(self, request, *args, **kwargs):
+        # """Просмотр листа подписок пользователя."""
+        # user = self.request.user
+        # # subscriptions = User.objects.filter(subscriptions__user=user)
+        # subscriptions = user.subscription.select_related( 'author' )
+        # list = self.paginate_queryset(subscriptions)
+        # serializer = SubscriptionSerializer(
+        #     list,
+        #     many=True,
+        #     context={'request': request}
+        # )
+        # return self.get_paginated_response(serializer.data)
+        return Response(
+                {'detail': 'Нельзя подписаться на самого себя.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     @action(methods=['post', 'delete'], detail=True,
             permission_classes=[IsAuthenticated])
@@ -328,9 +342,7 @@ class RecipeViewSet(
                     status=status.HTTP_400_BAD_REQUEST
                 )
             ShoppingCart.objects.create(user=user, recipe=recipe)
-            serializer = ShoppingCartSerializer(
-                recipe
-            )  # RecipeResponseSerializer
+            serializer = ShoppingCartSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         elif request.method == 'DELETE':
@@ -342,6 +354,51 @@ class RecipeViewSet(
                 )
             ShoppingCart.objects.filter(user=user, recipe=recipe).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=(IsAuthenticated,))
+    def download_shopping_cart(self, request):
+        """Скачиваем список с ингредиентами."""
+        buffer = io.BytesIO()
+        page = canvas.Canvas(buffer)
+        pdfmetrics.registerFont(TTFont('Vera', 'Vera.ttf'))
+        x_position, y_position = 50, 800
+        shopping_cart = (
+            request.user.shopping_cart.recipe.
+            values(
+                'ingredients__name',
+                'ingredients__measurement_unit'
+            ).annotate(amount=Sum('recipe__amount')).order_by())
+        page.setFont('Vera', 14)
+        if shopping_cart:
+            indent = 20
+            page.drawString(x_position, y_position, 'Cписок покупок:')
+            for index, recipe in enumerate(shopping_cart, start=1):
+                page.drawString(
+                    x_position, y_position - indent,
+                    f'{index}. {recipe["ingredients__name"]} - '
+                    f'{recipe["amount"]} '
+                    f'{recipe["ingredients__measurement_unit"]}.')
+                y_position -= 15
+                if y_position <= 50:
+                    page.showPage()
+                    y_position = 800
+            page.save()
+            buffer.seek(0)
+            return FileResponse(
+                buffer, as_attachment=True, filename='cart')
+        page.setFont('Vera', 24)
+        page.drawString(
+            x_position,
+            y_position,
+            'Cписок покупок пуст!')
+        page.save()
+        buffer.seek(0)
+        return FileResponse(buffer, as_attachment=True, filename='cart')
+
+
 
 
 @api_view(['GET'])

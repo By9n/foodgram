@@ -131,7 +131,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.IsAuthenticated', # OrReadOnly 
     ],
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageLimitPagination',
     'PAGE_SIZE': 6,
@@ -141,13 +141,15 @@ REST_FRAMEWORK = {
 DJOSER = {
     'SERIALIZERS': {
     'user': 'api.serializers.CustomUserSerializer',
-    #'current_user': 'api.serializers.CustomUserSerializer',
+    'current_user': 'api.serializers.CustomUserSerializer',
     'user_create': 'api.serializers.CreateCustomUserSerializer',
     },
     'PERMISSIONS': {
         'user': ('api.permissions.AuthorOrStaffOrReadOnly',),
         'user_list': ('rest_framework.permissions.AllowAny',),
-        #'current_user': ('rest_framework.permissions.IsAuthenticated',)
+        # 'user': ('djoser.permissions.CurrentUserOrAdminOrReadOnly',), #djoser.permissions.CurrentUserOrAdminOrReadOnly
+        # 'user_list': ('api.permissions.AuthorOrStaffOrReadOnly',),          #api.permissions.AuthorOrStaffOrReadOnly
+        #'current_user': ('rest_framework.permissions.AllowAny',)
     },
     'HIDE_USERS': False,
     'LOGIN_FIELD': 'email'

@@ -383,11 +383,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        """
-        Изменение рецепта.
-        Доступно только автору.
-        """
-
         RecipeTag.objects.filter(recipe=instance).delete()
         RecipeIngredient.objects.filter(recipe=instance).delete()
         ingredients = validated_data.pop('ingredients')
@@ -409,7 +404,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
 
 class ShowFavoriteSerializer(serializers.ModelSerializer):
-    """ Сериализатор для отображения избранного. """
+    """Serializer для избранного."""
 
     class Meta:
         model = Recipe
@@ -424,20 +419,15 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
-    """ Сериализатор для списка покупок. """
+    """ Serializer для списка покупок. """
 
     class Meta:
         model = Recipe
         fields = ['id', 'name', 'image', 'cooking_time']
 
-    # def to_representation(self, instance):
-    #     return ShowFavoriteSerializer(instance.recipe, context={
-    #         'request': self.context.get('request')
-    #     }).data
-
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    """ Сериализатор модели Избранное. """
+    """ Serializer модели Избранное. """
 
     class Meta:
         model = Favorite
@@ -452,53 +442,8 @@ class FavoriteSerializer(serializers.ModelSerializer):
         ).data
 
 
-class ShowSubscriptionsSerializer(serializers.ModelSerializer):
-    """ Сериализатор для отображения подписок пользователя. """
-
-    is_subscribed = serializers.SerializerMethodField(
-        read_only=True
-    )
-    recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = [
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'recipes',
-            'recipes_count',
-            'avatar'
-        ]
-
-    def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
-            return False
-        return Subscription.objects.filter(
-            user=request.user, author=obj).exists()
-
-    def get_recipes(self, obj):
-        request = self.context.get('request')
-        if not request or request.user.is_anonymous:
-            return False
-        recipes = Recipe.objects.filter(author=obj)
-        limit = request.query_params.get('recipes_limit')
-        if limit:
-            recipes = recipes[:int(limit)]
-        return ShowFavoriteSerializer(
-            recipes, many=True, context={'request': request}).data
-
-    def get_recipes_count(self, obj):
-        return Recipe.objects.filter(author=obj).count()
-
-
 class SubscriptionSerializer(UserSerializer):
-    """ Сериализатор для подписок пользователя."""
+    """Сериализатор подписок пользователя."""
 
     recipes = serializers.SerializerMethodField(read_only=True)
     recipes_count = serializers.SerializerMethodField()
@@ -523,14 +468,12 @@ class SubscriptionSerializer(UserSerializer):
     def get_recipes(self, obj):
         request = self.context['request']
         limit = request.GET.get('recipes_limit')
-        # recipes = Recipe.objects.filter(author=object)
+        recipes = Recipe.objects.filter(author=obj)
         if limit:
-            recipes = obj.recipes.all()[:(int(limit))]
-        context = {'request': request}
+            recipes = recipes[:(int(limit))]
         serializer = ShowFavoriteSerializer(
             recipes,
             many=True,
-            context=context
         ).data
         return serializer.data
 
