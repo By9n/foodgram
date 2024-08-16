@@ -66,11 +66,11 @@ class SubscriptionListView(viewsets.ReadOnlyModelViewSet):
     pagination_class = PageLimitPagination
     filter_backends = (filters.SearchFilter,)
     permission_classes = (permissions.IsAuthenticated,)
-    search_fields = ('^following__user',)
+    search_fields = ('^subscription__user',)
 
     def get_queryset(self):
         user = self.request.user
-        new_queryset = User.objects.filter(following__user=user)
+        new_queryset = User.objects.filter(subscription__user=user)
         return new_queryset
 
 
