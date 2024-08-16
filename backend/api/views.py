@@ -294,8 +294,11 @@ class RecipeViewSet(
             self.perform_destroy(instance)
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post'],
-            permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=['post'],
+        permission_classes=[IsAuthenticated]
+    )
     def favorite(self, request, pk=None):
         """Добавить рецепт в избранное текущего пользователя."""
         self.model_class = Favorite
@@ -309,8 +312,11 @@ class RecipeViewSet(
         self.action_name = 'избранное'
         return self.remove_from_list(request, pk)
 
-    @action(detail=True, methods=['post', 'delete'],
-            permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated]
+    )
     def shopping_cart(self, request, pk=None):
         """Добавить\удалить рецепт из списка покупок пользователя."""
         recipe = self.get_object()
