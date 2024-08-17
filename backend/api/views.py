@@ -84,16 +84,24 @@ class CustomUserViewSet(UserViewSet):
         if self.action in ('list', 'retrieve'):
             return (AllowAny(),)
         return super().get_permissions()
-
-    @action(detail=False, methods=['get'],
-            pagination_class=None,
-            permission_classes=(IsAuthenticated,))
-    def me(self, request):
-        if not request.user or request.user.is_anonymous:
-            return False
-        serializer = CustomUserSerializer(request.user)
-        return Response(serializer.data,
-                        status=status.HTTP_200_OK)
+    # def get_permissions(self):
+        
+    #     if self.action in ('create', 'retrieve', 'list'):
+    #         self.permission_classes = (AllowAny, )
+    #     else:
+    #         self.permission_classes = (IsAuthenticatedOrReadOnly, )
+    #     if self.action == 'me':
+    #         self.permission_classes = (IsAuthenticated,)
+    #     return super().get_permissions()
+    # @action(detail=False, methods=['get'],
+    #         pagination_class=None,
+    #         permission_classes=(IsAuthenticated,))
+    # def me(self, request):
+    #     if not request.user or request.user.is_anonymous:
+    #         return False
+    #     serializer = CustomUserSerializer(request.user)
+    #     return Response(serializer.data,
+    #                     status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['put'], url_path='me/avatar',
             permission_classes=[IsAuthenticated])
@@ -132,7 +140,8 @@ class CustomUserViewSet(UserViewSet):
     )
     def subscriptions(self, request):
         """Просмотр листа подписок пользователя."""
-        subscriptions = User.objects.filter(subscribers=self.request.user)
+        user = self.request.user
+        subscriptions = User.objects.filter(subscribers__user=user)
         list = self.paginate_queryset(subscriptions)
         serializer = SubscriptionSerializer(
             list, many=True, context={'request': request}

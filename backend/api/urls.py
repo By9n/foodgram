@@ -11,15 +11,10 @@ router = DefaultRouter()
 router.register(r'recipes', RecipeViewSet, basename='recipes')
 router.register(r'ingredients', IngredientViewSet, basename='ingredients')
 router.register(r'tags', TagViewSet, basename='tags')
-router.register(r'users', CustomUserViewSet, basename='subscriptions')
-router.register(
-    r'users/subscriptions',
-    SubscriptionListView,
-    basename='subscriptions',
-)
+router.register('users', CustomUserViewSet, basename='user')
+
 urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),
-    path('', include('djoser.urls')),
     path('', include(router.urls)),
     path('recipes/<int:recipe_id>/get-link/', get_short_link, name='get-link'),
 ]

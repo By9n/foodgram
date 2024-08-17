@@ -525,7 +525,7 @@ class SubscriptionSerializer(UserSerializer):
         limit = request.GET.get('recipes_limit')
         recipes = Recipe.objects.filter(author=obj)
         if limit:
-            recipes = obj.recipes.all()[:(int(limit))]
+            recipes = recipes[:int(limit)] # obj.recipes.all()[:(int(limit))]
         # context = {'request': request}
         serializer = ShowFavoriteSerializer(
             recipes,
