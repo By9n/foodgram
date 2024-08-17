@@ -523,15 +523,15 @@ class SubscriptionSerializer(UserSerializer):
     def get_recipes(self, obj):
         request = self.context['request']
         limit = request.GET.get('recipes_limit')
-        # recipes = Recipe.objects.filter(author=object)
+        recipes = Recipe.objects.filter(author=obj)
         if limit:
             recipes = obj.recipes.all()[:(int(limit))]
-        context = {'request': request}
+        # context = {'request': request}
         serializer = ShowFavoriteSerializer(
             recipes,
-            many=True,
-            context=context
-        ).data
+            many=True
+           # context=context
+        )
         return serializer.data
 
     def get_recipes_count(self, object):
