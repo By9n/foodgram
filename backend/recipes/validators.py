@@ -1,29 +1,27 @@
+import re
+
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
-# from django.utils.deconstruct import deconstructible
 from django.db.models import Field
+from django.utils import timezone
 
 
-# @deconstructible
 class SlugValidator(Field):
     def init(self, regex, message=None):
-         self.regex = regex
-         self.message = (message 
-         or 'Slug должен соответствовать регулярному выражению %s' % regex
-        )
+        self.regex = regex
+        self.message = (message
+                        or 'Slug должен соответствовать '
+                           'регулярному выражению %s' % regex
+                        )
+
     def validate(self, value, modelinstance):
         if not self.regex.match(value):
             raise ValidationError(self.message)
 
-import re
 
 def validateslug(slug):
-     pattern = re.compile('^[a-zA-Z0-9]+$')
-     return pattern.match(slug) is not None
-        
-
-from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.core.exceptions import ValidationError
-from django.utils import timezone
+    pattern = re.compile('^[a-zA-Z0-9]+$')
+    return pattern.match(slug) is not None
 
 
 def validate_correct_username(data):
