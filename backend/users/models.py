@@ -39,7 +39,7 @@ class User(AbstractUser):
         max_length=USERNAME_MAX_LENGTH,
         blank=False
     )
-    word = models.CharField(
+    password = models.CharField(
         verbose_name='Пароль',
         max_length=PASSWORD_MAX_LENGTH,
         blank=False,
@@ -83,13 +83,13 @@ class Subscription(models.Model):
         User,
         verbose_name='Подписчик',
         on_delete=models.CASCADE,
-        related_name='subscribers'
+        related_name='follower'
     )
     author = models.ForeignKey(
         User,
         verbose_name='Автор',
         on_delete=models.CASCADE,
-        related_name='followed_by'
+        related_name='following',
     )
 
     class Meta:
