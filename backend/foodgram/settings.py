@@ -129,7 +129,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
+   'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageLimitPagination',
@@ -147,7 +147,7 @@ DJOSER = {
         'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
         # 'user': ('api.permissions.AuthorOrStaffOrReadOnly',),
         'user_list': ('rest_framework.permissions.AllowAny',),
-        # 'current_user': ('rest_framework.permissions.IsAuthenticated',)
+        #'current_user': ('rest_framework.permissions.IsAuthenticated',)
     },
     'HIDE_USERS': False,
     'LOGIN_FIELD': 'email'
