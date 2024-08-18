@@ -13,7 +13,7 @@ from .validators import validate_tags
 
 
 class TokenCreateSerializer(serializers.Serializer):
-    """Serializer для получения токена."""
+    """Сериализатор для получения токена."""
 
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True)
