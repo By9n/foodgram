@@ -1,41 +1,33 @@
-from django.conf import settings
-from django.http import HttpResponse
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
+from io import BytesIO
+from django.contrib.auth.models import User
+from django.db.models import Sum
+from recipes.models import Recipe, RecipeIngredient
 
 
+def get_shopping_list(user: User) -> BytesIO:
+    """
+    Генерирует список покупок для пользователя.
+    И возвращает его в виде объекта BytesIO.
+    """
+    shopping_cart_recipes = Recipe.objects.filter(shopping_carts__user=user)
 
+    if not shopping_cart_recipes.exists():
+        raise ValueError("Список покупок пуст.")
 
-def shopping_list(ingredients: list) -> HttpResponse:
-    """Создание PDF-файла с списком покупок."""
-    font_size_title = settings.FONT_SIZE_TITLE
-    font_size = settings.FONT_SIZE
-    indent_x = settings.INDENT_X
-    indent_y = settings.INDENT_Y
-    line_break_size = settings.LINE_BREAK_SIZE
-    line_break_size_after_title = settings.LINE_BREAK_SIZE_AFTER_TITLE
-    pdfmetrics.registerFont(TTFont('DejaVuSerif', 'DejaVuSerif.ttf', 'UTF-8'))
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = ('attachment; '
-                                       'filename="shopping_list.pdf"')
-    pdf_canvas = canvas.Canvas(response, pagesize=A4)
-    pdf_canvas.setFont('DejaVuSerif', font_size_title)
-    pdf_canvas.drawString(indent_x, indent_y, 'Список покупок:')
-    indent_y -= line_break_size_after_title
-    pdf_canvas.setFont('DejaVuSerif', font_size)
-    for ingredient in ingredients:
-        ingredient_name = ingredient['ingredient__name']
-        measurement_unit = ingredient['ingredient__measurement_unit']
-        amount = ingredient['amount']
-        pdf_canvas.drawString(
-            indent_x,
-            indent_y,
-            f'{ingredient_name} ({measurement_unit}) - {amount}'
-        )
-        indent_y -= line_break_size
-    pdf_canvas.setTitle('Список покупок')
-    pdf_canvas.showPage()
-    pdf_canvas.save()
-    return response
+    ingredients = RecipeIngredient.objects.filter(
+        recipe__in=shopping_cart_recipes
+    ).values(
+        'ingredient__name',
+        'ingredient__measurement_unit'
+    ).annotate(
+        total_quantity=Sum('amount')
+    )
+
+    file_content = "Необходимо купить:\n"
+    for item in ingredients:
+        file_content += (f"{item['ingredient__name']} - "
+                         f"{item['total_quantity']} "
+                         f"{item['ingredient__measurement_unit']}\n")
+
+    file_buffer = BytesIO(file_content.encode('utf-8'))
+    return file_buffer

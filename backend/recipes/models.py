@@ -1,16 +1,16 @@
-import string, random
+import string
+import random
 
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from users.models import User
-from .validators import  validateslug
+from .validators import validateslug
 from .constants import (
-    MAX_LENGTH_NAME_RECIPE, MAX_LENGTH_TAG, 
+    MAX_LENGTH_NAME_RECIPE, MAX_LENGTH_TAG,
+    MAX_LENGTH_NAME_INGREDIENT, MAX_LENGTH_MEASUREMENT_UNIT
 )
-
-
 
 
 class Tag(models.Model):
@@ -102,13 +102,13 @@ class Ingredient(models.Model):
     """Модель ингредиентов"""
     name = models.CharField(
         verbose_name='Название ингредиента',
-        max_length=128,
+        max_length=MAX_LENGTH_NAME_INGREDIENT,
         blank=False,
         help_text='Введите название ингредиента'
     )
     measurement_unit = models.CharField(
         verbose_name='Единица измерения',
-        max_length=64,
+        max_length=MAX_LENGTH_MEASUREMENT_UNIT,
         blank=False,
         help_text='Введите единицы измерения'
     )
@@ -129,17 +129,19 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепт',
-        related_name='recipe_ingredients',
+        related_name='recipes_ingredients',
         on_delete=models.CASCADE
     )
     ingredient = models.ForeignKey(
         Ingredient,
         verbose_name='Ингредиент',
-        related_name='recipe_ingredients',
+        related_name='recipes_ingredients',
         on_delete=models.CASCADE
     )
     amount = models.PositiveIntegerField(
         verbose_name='Количество',
+        blank=False,
+        null=False,
         validators=[
             MinValueValidator(
                 1,
@@ -240,7 +242,7 @@ class ShoppingCart(models.Model):
                 fields=['user', 'recipe'],
                 name='unique_shopping_cart')
         ]
-    
+
     def __str__(self):
         return f'{self.user} >> {self.recipe}'
 

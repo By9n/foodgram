@@ -1,8 +1,7 @@
 from django.db.models import Sum
-from django.http import HttpResponse
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser.serializers import SetPasswordSerializer
 from djoser.views import UserViewSet
 from rest_framework import status, viewsets, filters, permissions
 from rest_framework.decorators import api_view
@@ -33,7 +32,7 @@ from .serializers import (
     CreateCustomUserSerializer,
     AvatarUserSerializer
 )
-from .shopping_list import shopping_list
+from .shopping_list import get_shopping_list
 
 
 class TokenCreateView(APIView):
@@ -84,24 +83,6 @@ class CustomUserViewSet(UserViewSet):
         if self.action in ('list', 'retrieve'):
             return (AllowAny(),)
         return super().get_permissions()
-    # def get_permissions(self):
-        
-    #     if self.action in ('create', 'retrieve', 'list'):
-    #         self.permission_classes = (AllowAny, )
-    #     else:
-    #         self.permission_classes = (IsAuthenticatedOrReadOnly, )
-    #     if self.action == 'me':
-    #         self.permission_classes = (IsAuthenticated,)
-    #     return super().get_permissions()
-    # @action(detail=False, methods=['get'],
-    #         pagination_class=None,
-    #         permission_classes=(IsAuthenticated,))
-    # def me(self, request):
-    #     if not request.user or request.user.is_anonymous:
-    #         return False
-    #     serializer = CustomUserSerializer(request.user)
-    #     return Response(serializer.data,
-    #                     status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['put'], url_path='me/avatar',
             permission_classes=[IsAuthenticated])
@@ -333,7 +314,7 @@ class RecipeViewSet(
             ShoppingCart.objects.create(user=user, recipe=recipe)
             serializer = ShoppingCartSerializer(
                 recipe
-            )  # RecipeResponseSerializer
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         elif request.method == 'DELETE':
@@ -346,6 +327,79 @@ class RecipeViewSet(
             ShoppingCart.objects.filter(user=user, recipe=recipe).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
+    # @action(detail=False, methods=['get'],
+    #         permission_classes=[IsAuthenticated])
+    # def download_shopping_cart(self, request):
+    #     """
+    #     Скачивание списка покупок для авторизованного
+    #     пользователя в формате TXT.
+    #     """
+    #     user = request.user
+
+    #     try:
+    #         file_buffer = get_shopping_list(user)
+    #     except ValueError:
+    #         return Response(
+    #             {'detail': 'Ваш список покупок пуст.'},
+    #             status=status.HTTP_400_BAD_REQUEST
+    #         )
+
+    #     return FileResponse(file_buffer,
+    #                         as_attachment=True,
+    #                         filename='shopping_cart.txt')
+
+    @action(detail=False, methods=['get'],
+            permission_classes=[IsAuthenticated])
+    def download_shopping_cart(self, request):
+        """
+        Скачивание списка покупок для авторизованного.
+        пользователя в формате TXT.
+        """
+        if not request.user.is_authenticated:
+            return Response(
+                {'detail': 'Пользователь не авторизован.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        user = self.request.user
+        shopping_cart_recipes = Recipe.objects.filter(
+            shopping_cart__user=user)
+
+        if not shopping_cart_recipes.exists():
+            return Response({'detail': 'Список покупок пуст.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        ingredients = RecipeIngredient.objects.filter(
+            recipe__shopping_cart__user=user
+            ).values(
+                'ingredient__name',
+                'ingredient__measurement_unit'
+            ).order_by(
+                'ingredient__name'
+            ).annotate(
+                total_quantity=Sum('amount')
+            )
+
+        # ingredients = RecipeIngredient.objects.filter(
+        #     recipes_ingredients__recipe=shopping_cart_recipes  # recipes_ingredients
+        # ).values(
+        #     'ingredient__name',
+        #     'ingredient__measurement_unit'
+        # ).annotate(
+        #     total_quantity=Sum('amount')
+        # )
+
+        lines = []
+        for item in ingredients:
+            lines.append(
+                f"{item['ingredient__name']} - {item['total_quantity']} "
+                f"{item['ingredient__measurement_unit']}\n"
+            )
+
+        file_content = "Необходимо купить:\n" + ''.join(lines)
+        response = HttpResponse(file_content, content_type='text/plain')
+        response['Content-Disposition'] = ('attachment;'
+                                           'filename="shopping_cart.txt"')
+        return response
 
 @api_view(['GET'])
 def get_short_link(request, recipe_id):
