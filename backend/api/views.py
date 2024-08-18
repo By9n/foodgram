@@ -1,38 +1,28 @@
+from django.contrib.auth import authenticate
 from django.db.models import Sum
-from django.http import FileResponse, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from rest_framework import status, viewsets, filters, permissions
-from rest_framework.decorators import api_view
-from rest_framework.generics import ListAPIView
-from rest_framework.permissions import (
-    AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, SAFE_METHODS
-
-)
+from rest_framework import status, viewsets
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action, api_view
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth import authenticate
-from rest_framework.decorators import action
 
+from api.filters import IngredientFilter, RecipeFilter
+from api.pagination import PageLimitPagination
+from api.permissions import AuthorOrStaffOrReadOnly
+from api.serializers import (AvatarUserSerializer, CreateRecipeSerializer,
+                             FavoriteSerializer, IngredientSerializer,
+                             RecipeSerializer, ShoppingCartSerializer,
+                             ShortLinkSerializer, ShowFavoriteSerializer,
+                             SubscriptionSerializer, TagSerializer,
+                             TokenCreateSerializer)
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingCart, Tag, RecipeShortLink)
+                            RecipeShortLink, ShoppingCart, Tag)
 from users.models import Subscription, User
-
-from .filters import IngredientFilter, RecipeFilter
-from .pagination import PageLimitPagination
-from .permissions import AuthorOrStaffOrReadOnly
-from .serializers import (
-    CreateRecipeSerializer, FavoriteSerializer,
-    IngredientSerializer, RecipeSerializer,
-    ShortLinkSerializer,
-    ShoppingCartSerializer, ShowSubscriptionsSerializer,
-    SubscriptionSerializer, TagSerializer, TokenCreateSerializer,
-    ShowFavoriteSerializer, CustomUserSerializer,
-    CreateCustomUserSerializer,
-    AvatarUserSerializer
-)
-from .shopping_list import get_shopping_list
 
 
 class TokenCreateView(APIView):
@@ -58,21 +48,6 @@ class TokenCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SubscriptionListView(viewsets.ReadOnlyModelViewSet):
-    """ViewSet для генерации списка подписок пользователя."""
-    queryset = User.objects.all()
-    serializer_class = SubscriptionSerializer
-    pagination_class = PageLimitPagination
-    filter_backends = (filters.SearchFilter,)
-    permission_classes = (permissions.IsAuthenticated,)
-    search_fields = ('^subscription__user',)
-
-    def get_queryset(self):
-        user = self.request.user
-        new_queryset = User.objects.filter(subscription__user=user)
-        return new_queryset
-
-
 class CustomUserViewSet(UserViewSet):
     """ViewSet модели пользователей"""
 
@@ -87,7 +62,7 @@ class CustomUserViewSet(UserViewSet):
     @action(detail=False, methods=['put'], url_path='me/avatar',
             permission_classes=[IsAuthenticated])
     def avatar(self, request, *args, **kwargs):
-        """Добавление\обновление аватара пользователя."""
+        """Добавление-обновление аватара пользователя."""
         user = request.user
         serializer = AvatarUserSerializer(user, data=request.data)
 
@@ -162,8 +137,7 @@ class CustomUserViewSet(UserViewSet):
 
 
 class FavoriteView(APIView):
-    """ Добавление/удаление рецепта из избранного."""
-
+    """Добавление/удаление рецепта из избранного."""
     permission_classes = [IsAuthenticated, ]
     pagination_class = PageLimitPagination
 
@@ -194,8 +168,7 @@ class FavoriteView(APIView):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    """ Отображение тегов."""
-
+    """Отображение тегов."""
     permission_classes = [AllowAny, ]
     pagination_class = None
     serializer_class = TagSerializer
@@ -203,8 +176,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    """ Отображение ингредиентов."""
-
+    """Отображение ингредиентов."""
     permission_classes = [AllowAny, ]
     pagination_class = None
     serializer_class = IngredientSerializer
@@ -302,7 +274,7 @@ class RecipeViewSet(
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
-        """Добавить\удалить рецепт из списка покупок пользователя."""
+        """Добавить-удалить рецепт из списка покупок пользователя."""
         recipe = self.get_object()
         user = request.user
         if request.method == 'POST':
@@ -327,34 +299,10 @@ class RecipeViewSet(
             ShoppingCart.objects.filter(user=user, recipe=recipe).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    # @action(detail=False, methods=['get'],
-    #         permission_classes=[IsAuthenticated])
-    # def download_shopping_cart(self, request):
-    #     """
-    #     Скачивание списка покупок для авторизованного
-    #     пользователя в формате TXT.
-    #     """
-    #     user = request.user
-
-    #     try:
-    #         file_buffer = get_shopping_list(user)
-    #     except ValueError:
-    #         return Response(
-    #             {'detail': 'Ваш список покупок пуст.'},
-    #             status=status.HTTP_400_BAD_REQUEST
-    #         )
-
-    #     return FileResponse(file_buffer,
-    #                         as_attachment=True,
-    #                         filename='shopping_cart.txt')
-
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
-        """
-        Скачивание списка покупок для авторизованного.
-        пользователя в формате TXT.
-        """
+        """Скачивание списка покупок в формате TXT."""
         if not request.user.is_authenticated:
             return Response(
                 {'detail': 'Пользователь не авторизован.'},
@@ -370,23 +318,14 @@ class RecipeViewSet(
 
         ingredients = RecipeIngredient.objects.filter(
             recipe__shopping_cart__user=user
-            ).values(
-                'ingredient__name',
-                'ingredient__measurement_unit'
-            ).order_by(
-                'ingredient__name'
-            ).annotate(
-                total_quantity=Sum('amount')
-            )
-
-        # ingredients = RecipeIngredient.objects.filter(
-        #     recipes_ingredients__recipe=shopping_cart_recipes  # recipes_ingredients
-        # ).values(
-        #     'ingredient__name',
-        #     'ingredient__measurement_unit'
-        # ).annotate(
-        #     total_quantity=Sum('amount')
-        # )
+        ).values(
+            'ingredient__name',
+            'ingredient__measurement_unit'
+        ).order_by(
+            'ingredient__name'
+        ).annotate(
+            total_quantity=Sum('amount')
+        )
 
         lines = []
         for item in ingredients:
@@ -401,9 +340,10 @@ class RecipeViewSet(
                                            'filename="shopping_cart.txt"')
         return response
 
+
 @api_view(['GET'])
 def get_short_link(request, recipe_id):
-    """Получение\создание короткой ссылки для рецепта."""
+    """Получение-создание короткой ссылки для рецепта."""
     try:
         recipe = Recipe.objects.get(id=recipe_id)
     except Recipe.DoesNotExist:

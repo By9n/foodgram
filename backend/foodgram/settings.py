@@ -1,5 +1,4 @@
 import os
-
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -16,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG') == 'True'
-ALLOWED_HOSTS = [] # os.environ['ALLOWED_HOSTS'].split(',')
+ALLOWED_HOSTS = []  # os.environ['ALLOWED_HOSTS'].split(',')
 
 # Application definition
 
@@ -130,7 +129,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
-   'DEFAULT_PERMISSION_CLASSES': [
+    'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageLimitPagination',
@@ -140,15 +139,15 @@ REST_FRAMEWORK = {
 
 DJOSER = {
     'SERIALIZERS': {
-    'user': 'api.serializers.CustomUserSerializer',
-    'current_user': 'api.serializers.CustomUserSerializer',
-    'user_create': 'api.serializers.CreateCustomUserSerializer',
+        'user': 'api.serializers.CustomUserSerializer',
+        'current_user': 'api.serializers.CustomUserSerializer',
+        'user_create': 'api.serializers.CreateCustomUserSerializer',
     },
     'PERMISSIONS': {
         'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
         # 'user': ('api.permissions.AuthorOrStaffOrReadOnly',),
         'user_list': ('rest_framework.permissions.AllowAny',),
-        #'current_user': ('rest_framework.permissions.IsAuthenticated',)
+        # 'current_user': ('rest_framework.permissions.IsAuthenticated',)
     },
     'HIDE_USERS': False,
     'LOGIN_FIELD': 'email'

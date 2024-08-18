@@ -1,16 +1,15 @@
-import string
 import random
+import string
 
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from recipes.constants import (MAX_LENGTH_MEASUREMENT_UNIT,
+                               MAX_LENGTH_NAME_INGREDIENT,
+                               MAX_LENGTH_NAME_RECIPE, MAX_LENGTH_TAG)
+from recipes.validators import validateslug
 from users.models import User
-from .validators import validateslug
-from .constants import (
-    MAX_LENGTH_NAME_RECIPE, MAX_LENGTH_TAG,
-    MAX_LENGTH_NAME_INGREDIENT, MAX_LENGTH_MEASUREMENT_UNIT
-)
 
 
 class Tag(models.Model):
@@ -249,7 +248,6 @@ class ShoppingCart(models.Model):
 
 class RecipeShortLink(models.Model):
     """Модель коротких ссылок на рецепты."""
-
     recipe = models.OneToOneField(Recipe, on_delete=models.CASCADE,
                                   related_name='short_link')
     short_link = models.CharField(max_length=3, unique=True,
@@ -265,6 +263,8 @@ class RecipeShortLink(models.Model):
         characters = string.ascii_letters + string.digits
         while True:
             short_link = ''.join(random.choices(characters, k=length))
-            if not RecipeShortLink.objects.filter(short_link=short_link).exists():
+            if not RecipeShortLink.objects.filter(
+                short_link=short_link
+            ).exists():
                 break
         return short_link
