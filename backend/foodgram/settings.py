@@ -146,10 +146,6 @@ DJOSER = {
     'PERMISSIONS': {
         'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
         'user_list': ('rest_framework.permissions.AllowAny',),
-<<<<<<< HEAD
-        #'current_user': ('rest_framework.permissions.IsAuthenticated',)
-=======
->>>>>>> merge_branch
     },
     'HIDE_USERS': False,
     'LOGIN_FIELD': 'email'
