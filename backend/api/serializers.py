@@ -71,12 +71,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
         ).exists()
 
 
-class ShortResipesSerializer(serializers.ModelSerializer):
+class ShowFavoriteSerializer(serializers.ModelSerializer):
     """Сериализатор укороченной информации о рецепте."""
-
     class Meta:
         model = Recipe
-        fields = 'id', 'name', 'image', 'cooking_time'
+        fields = ['id', 'name', 'image', 'cooking_time']
         read_only_fields = ('__all__',)
 
 
@@ -110,7 +109,7 @@ class ShortLinkSerializer(serializers.ModelSerializer):
         queryset = obj.recipes.all()
         if limit:
             queryset = queryset[:int(limit)]
-        serializer = ShortResipesSerializer(queryset, many=True)
+        serializer = ShowFavoriteSerializer(queryset, many=True)
         return serializer.data
 
     def validate(self, attrs: dict) -> dict:
@@ -321,13 +320,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return RecipeSerializer(instance, context={
             'request': self.context.get('request')
         }).data
-
-
-class ShowFavoriteSerializer(serializers.ModelSerializer):
-    """Сериализатор для отображения избранного."""
-    class Meta:
-        model = Recipe
-        fields = ['id', 'name', 'image', 'cooking_time']
 
 
 class TagSerializer(serializers.ModelSerializer):
