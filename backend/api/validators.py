@@ -4,7 +4,7 @@ from recipes.models import Ingredient, Tag
 
 
 def validate_ingredients(data):
-    """Валидация ингредиентов и количества."""
+    """Валидация ингредиентов и количества. """
     if not data:
         raise ValidationError(
             {'ingredients': ['Обязательное поле.']}

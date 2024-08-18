@@ -26,7 +26,7 @@ from users.models import Subscription, User
 
 
 class TokenCreateView(APIView):
-    """Вьюсет для получения токена авторизации."""
+    """Вьюсет для получения токена авторизации. """
     permission_classes = (AllowAny, )
     serializer_class = TokenCreateSerializer
 
