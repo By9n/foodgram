@@ -6,7 +6,7 @@ from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            RecipeShortLink, RecipeTag, ShoppingCart, Tag)
+                            RecipeShortLink, ShoppingCart, Tag)
 from users.models import Subscription, User
 
 from .validators import validate_tags
@@ -285,29 +285,29 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                 ingredient=ingredient, recipe=recipe, amount=i['amount']
             )
 
-    def create_tags(self, tags, recipe):
-        for tag in tags:
-            RecipeTag.objects.create(recipe=recipe, tag=tag)
+    # def create_tags(self, tags, recipe):
+    #     for tag in tags:
+    #         Tag.objects.create(recipe=recipe, tag=tag)
 
     def create(self, validated_data):
         """Создание рецепта."""
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-
         author = self.context.get('request').user
         recipe = Recipe.objects.create(author=author, **validated_data)
         self.create_ingredients(ingredients, recipe)
-        self.create_tags(tags, recipe)
+        # self.create_tags(tags, recipe)
         return recipe
 
     def update(self, instance, validated_data):
         """Изменение рецепта."""
-        RecipeTag.objects.filter(recipe=instance).delete()
+        instance.tags.clear()
+        # RecipeTag.objects.filter(recipe=instance).delete()
         RecipeIngredient.objects.filter(recipe=instance).delete()
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients', None)
+        tags = validated_data.pop('tags', None)
         self.create_ingredients(ingredients, instance)
-        self.create_tags(tags, instance)
+        #self.create_tags(tags, instance)
         instance.name = validated_data.pop('name')
         instance.text = validated_data.pop('text')
         if validated_data.get('image'):
