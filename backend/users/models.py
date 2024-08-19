@@ -1,9 +1,9 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from .constants import (EMAIL_MAX_LENGTH, PASSWORD_MAX_LENGTH, ROLE_MAX_LENGTH,
-                        USERNAME_MAX_LENGTH)
-from .validators import validate_correct_username, validate_username
+from .constants import EMAIL_MAX_LENGTH, ROLE_MAX_LENGTH, USERNAME_MAX_LENGTH
+from .validators import (validate_alfanumeric_username,
+                         validate_correct_username, validate_username)
 
 
 class UserRoles(models.TextChoices):
@@ -29,18 +29,16 @@ class User(AbstractUser):
     )
     first_name = models.CharField(
         verbose_name='Имя',
+        validators=[validate_username, validate_alfanumeric_username],
         max_length=USERNAME_MAX_LENGTH,
         blank=False
     )
+
     last_name = models.CharField(
         verbose_name='Фамилия',
+        validators=[validate_username, validate_alfanumeric_username],
         max_length=USERNAME_MAX_LENGTH,
         blank=False
-    )
-    password = models.CharField(
-        verbose_name='Пароль',
-        max_length=PASSWORD_MAX_LENGTH,
-        blank=False,
     )
     role = models.CharField(
         verbose_name='Роль пользователя',
@@ -93,7 +91,7 @@ class Subscription(models.Model):
     class Meta:
         verbose_name = 'Подписчик'
         verbose_name_plural = 'Подписчики'
-        ordering = ('id',)
+        ordering = ('-user',)
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'], name='unique_subscripting'
