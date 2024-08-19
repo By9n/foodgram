@@ -1,16 +1,16 @@
 import random
-import string
 
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from recipes.constants import (MAX_LENGTH_MEASUREMENT_UNIT,
+from recipes.constants import (MAX_AMOUNT_INGREDIENT, MAX_COOKING_TIME,
+                               MAX_LENGTH_MEASUREMENT_UNIT,
                                MAX_LENGTH_NAME_INGREDIENT,
-                               MAX_LENGTH_NAME_RECIPE, MAX_LENGTH_TAG,
-                               MAX_LENGTH_TEXT_RECIPE,
-                               MIN_AMOUNT_INGREDIENT, MAX_AMOUNT_INGREDIENT,
-                               MIN_COOKING_TIME, MAX_COOKING_TIME)
+                               MAX_LENGTH_NAME_RECIPE, MAX_LENGTH_SHORT_LINK,
+                               MAX_LENGTH_TAG, MAX_LENGTH_TEXT_RECIPE,
+                               MIN_AMOUNT_INGREDIENT, MIN_COOKING_TIME,
+                               STRING_FOR_RANDOM)
 
 User = get_user_model()
 
@@ -162,74 +162,6 @@ class RecipeIngredient(models.Model):
         unique_together = ('recipe', 'ingredient')
 
 
-# class BaseFavoriteShoppingCart(models.Model):
-#     """Модель избранных рецептов"""
-#     user = models.ForeignKey(
-#         User,
-#         on_delete=models.CASCADE,
-#         verbose_name='Пользователь',
-#         help_text='Пользователь',
-#     )
-#     recipe = models.ForeignKey(
-#         Recipe,
-#         on_delete=models.CASCADE,
-#         verbose_name='Рецепт',
-#         help_text='Рецепт',
-#     )
-
-
-# class Favorite(BaseFavoriteShoppingCart):
-#     """Модель избранных рецептов"""
-#     # user = models.ForeignKey(
-#     #     User,
-#     #     on_delete=models.CASCADE,
-#     #     related_name='favorites_user',
-#     # )
-#     # recipe = models.ForeignKey(
-#     #     Recipe,
-#     #     on_delete=models.CASCADE,
-#     #     related_name='favorites_recipe',
-#     #     related_query_name='favorites',
-#     # )
-
-#     class Meta:
-#         verbose_name = 'Избранное'
-#         verbose_name_plural = 'Избранные'
-#         constraints = [
-#             models.UniqueConstraint(
-#                 fields=['user', 'recipe'],
-#                 name='unique_favorite'
-#             )
-#         ]
-
-#     def __str__(self):
-#         return f'{self.user} >> {self.recipe}'
-
-
-# class ShoppingCart(BaseFavoriteShoppingCart):
-#     """ Модель корзины покупок """
-#     # user = models.ForeignKey(
-#     #     User,
-#     #     related_name='shopping_cart',
-#     # )
-#     # recipe = models.ForeignKey(
-#     #     Recipe,
-#     #     related_name='shopping_cart',
-#     # )
-
-#     class Meta:
-#         verbose_name = 'Корзина покупок'
-#         verbose_name_plural = 'Корзины покупок'
-#         constraints = [
-#             models.UniqueConstraint(
-#                 fields=['user', 'recipe'],
-#                 name='unique_shopping_cart')
-#         ]
-
-#     def __str__(self):
-#         return f'{self.user} >> {self.recipe}'
-
-
 class FavoriteShoppingCart(models.Model):
     """ Связывающая модель списка покупок и избранного. """
     user = models.ForeignKey(
@@ -283,9 +215,10 @@ class RecipeShortLink(models.Model):
         related_name='short_link'
     )
     short_link = models.CharField(
-        max_length=3,
+        max_length=MAX_LENGTH_SHORT_LINK,
         unique=True,
-        blank=True, null=True
+        blank=True,
+        null=True
     )
 
     def save(self, *args, **kwargs):
@@ -294,10 +227,12 @@ class RecipeShortLink(models.Model):
         super().save(*args, **kwargs)
 
     def generate_short_link(self):
-        length = 3
-        characters = string.ascii_letters + string.digits
+        characters = STRING_FOR_RANDOM
         while True:
-            short_link = ''.join(random.choices(characters, k=length))
+            short_link = ''.join(random.choices(
+                characters,
+                k=MAX_LENGTH_SHORT_LINK
+            ))
             if not RecipeShortLink.objects.filter(
                 short_link=short_link
             ).exists():

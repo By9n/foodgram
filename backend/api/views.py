@@ -13,44 +13,20 @@ from rest_framework.views import APIView
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.pagination import PageLimitPagination
-from api.permissions import AuthorOrStaffOrReadOnly
+from api.permissions import IsAuthorAdminAuthenticated
 from api.serializers import (AvatarUserSerializer, CreateRecipeSerializer,
                              FavoriteSerializer, IngredientSerializer,
                              RecipeSerializer, ShoppingCartSerializer,
                              ShortLinkSerializer, ShowFavoriteSerializer,
-                             SubscriptionSerializer, TagSerializer,
-                             TokenCreateSerializer)
+                             SubscriptionSerializer, TagSerializer)
+                            #  TokenCreateSerializer)
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             RecipeShortLink, ShoppingCart, Tag)
 from users.models import Subscription, User
 
 
-class TokenCreateView(APIView):
-    """Вьюсет для получения токена авторизации. """
-    permission_classes = (AllowAny, )
-    serializer_class = TokenCreateSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            password = serializer.validated_data['password']
-            user = authenticate(email=email, password=password)
-
-            if user:
-                token, created = Token.objects.get_or_create(user=user)
-                return Response({'auth_token': token.key},
-                                status=status.HTTP_201_CREATED)
-            return Response({'detail': 'Неверные учетные данные.'},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class CustomUserViewSet(UserViewSet):
     """ViewSet модели пользователей"""
-
     queryset = User.objects.all()
     pagination_class = PageLimitPagination
 
@@ -136,37 +112,6 @@ class CustomUserViewSet(UserViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
-class FavoriteView(APIView):
-    """Добавление/удаление рецепта из избранного."""
-    permission_classes = [IsAuthenticated, ]
-    pagination_class = PageLimitPagination
-
-    def post(self, request, id):
-        data = {
-            'user': request.user.id,
-            'recipe': id
-        }
-
-        if not Favorite.objects.filter(
-           user=request.user, recipe__id=id).exists():
-            serializer = FavoriteSerializer(
-                data=data, context={'request': request}
-            )
-            if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    serializer.data, status=status.HTTP_201_CREATED)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, id):
-        recipe = get_object_or_404(Recipe, id=id)
-        if Favorite.objects.filter(
-           user=request.user, recipe=recipe).exists():
-            Favorite.objects.filter(user=request.user, recipe=recipe).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """Отображение тегов."""
     permission_classes = [AllowAny, ]
@@ -223,7 +168,7 @@ class RecipeViewSet(
     """ViewSet для рецептов."""
     queryset = Recipe.objects.all()
     pagination_class = PageLimitPagination
-    permission_classes = (AuthorOrStaffOrReadOnly, )
+    permission_classes = (IsAuthorAdminAuthenticated, )
     filter_backends = (DjangoFilterBackend, )
     filterset_class = RecipeFilter
     http_method_names = ['get', 'post', 'patch', 'create', 'delete']
