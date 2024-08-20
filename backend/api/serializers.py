@@ -2,6 +2,8 @@ import os
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+import django.contrib.auth.password_validation as validators
+from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 # UserCreateSerializer,
@@ -19,46 +21,89 @@ from .validators import validate_tags
 User = get_user_model()
 
 
-class CreateUserSerializer(DjoserUserCreateSerializer):
-    """Сериализатор создания пользователя."""
-    class Meta:
-        model = User
-        fields = [
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'password'
-        ]
-
-
-class UserSerializer(DjoserUserSerializer):
-    """Сериализатор модели User"""
-    is_subscribed = serializers.SerializerMethodField(
-        read_only=True
-    )
-
-    class Meta:
-        model = User
-        fields = [
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'avatar'
-        ]
-        read_only_fields = ('id',)
+class UserSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
 
     def get_is_subscribed(self, obj):
-        user = self.context['request'].user
-        if not user or user.is_anonymous:
+        if (
+            'request' not in self.context or
+            self.context['request'].user.is_anonymous
+        ):
             return False
         return Subscription.objects.filter(
-            user=user, author=obj
+            author=obj, user=self.context['request'].user
         ).exists()
+
+    def validate(self, data):
+        user = User(**data)
+        password = data.get('password')
+        try:
+            validators.validate_password(password=password, user=user)
+        except ValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return super(UserSerializer, self).validate(data)
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
+    class Meta:
+        model = User
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'password',
+            'is_subscribed'
+        )
+        extra_kwargs = {'password': {'write_only': True}}
+
+
+# class CreateUserSerializer(DjoserUserCreateSerializer):
+#     """Сериализатор создания пользователя."""
+#     class Meta:
+#         model = User
+#         fields = [
+#             'email',
+#             'id',
+#             'username',
+#             'first_name',
+#             'last_name',
+#             'password'
+#         ]
+
+
+# class UserSerializer(DjoserUserSerializer):
+#     """Сериализатор модели User"""
+#     is_subscribed = serializers.SerializerMethodField(
+#         read_only=True
+#     )
+
+#     class Meta:
+#         model = User
+#         fields = [
+#             'email',
+#             'id',
+#             'username',
+#             'first_name',
+#             'last_name',
+#             'is_subscribed',
+#             'avatar'
+#         ]
+#         read_only_fields = ('id',)
+
+#     def get_is_subscribed(self, obj):
+#         user = self.context['request'].user
+#         if not user or user.is_anonymous:
+#             return False
+#         return Subscription.objects.filter(
+#             user=user, author=obj
+#         ).exists()
 
     # def create(self, validated_data: dict) -> User:
     #     """Создаёт нового пользователя с запрошенными полями."""
