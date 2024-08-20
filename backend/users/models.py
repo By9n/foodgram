@@ -28,14 +28,14 @@ class User(AbstractUser):
     )
     first_name = models.CharField(
         verbose_name='Имя',
-        validators=[validate_username,],
+        validators=[validate_username, ],
         max_length=USERNAME_MAX_LENGTH,
         blank=False
     )
 
     last_name = models.CharField(
         verbose_name='Фамилия',
-        validators=[validate_username,],
+        validators=[validate_username, ],
         max_length=USERNAME_MAX_LENGTH,
         blank=False
     )
