@@ -5,8 +5,8 @@ from django.contrib.auth import get_user_model
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 # UserCreateSerializer,
-from djoser.serializers import \
-    UserCreateSerializer as DjoserUserCreateSerializer
+from djoser.serializers import (
+    UserCreateSerializer as DjoserUserCreateSerializer)
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
@@ -17,6 +17,20 @@ from users.models import Subscription
 from .validators import validate_tags
 
 User = get_user_model()
+
+
+class CreateUserSerializer(DjoserUserCreateSerializer):
+    """Сериализатор создания пользователя."""
+    class Meta:
+        model = User
+        fields = [
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'password'
+        ]
 
 
 class UserSerializer(DjoserUserSerializer):
@@ -46,6 +60,17 @@ class UserSerializer(DjoserUserSerializer):
             user=user, author=obj
         ).exists()
 
+    # def create(self, validated_data: dict) -> User:
+    #     """Создаёт нового пользователя с запрошенными полями."""
+    #     user = User(
+    #         email=validated_data["email"],
+    #         username=validated_data["username"],
+    #         first_name=validated_data["first_name"],
+    #         last_name=validated_data["last_name"],
+    #     )
+    #     user.set_password(validated_data["password"])
+    #     user.save()
+    #     return user
 
 class ShowFavoriteSerializer(serializers.ModelSerializer):
     """Сериализатор укороченной информации о рецепте."""
@@ -145,7 +170,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатор просмотра модели Рецепт."""
     tags = TagSerializer(many=True)
-    author = CustomUserSerializer(read_only=True)
+    author = UserSerializer(read_only=True)
     ingredients = serializers.SerializerMethodField()
     image = Base64ImageField(required=True)
     is_favorited = serializers.SerializerMethodField(
@@ -203,7 +228,7 @@ class AddIngredientRecipeSerializer(serializers.ModelSerializer):
 
 class CreateRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор создания/обновления рецепта."""
-    author = CustomUserSerializer(read_only=True)
+    author = UserSerializer(read_only=True)
     ingredients = AddIngredientRecipeSerializer(many=True)
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
