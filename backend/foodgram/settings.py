@@ -13,9 +13,9 @@ except FileNotFoundError:
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = os.getenv('DEBUG') == 'True'
-ALLOWED_HOSTS = []  # os.environ['ALLOWED_HOSTS'].split(',')
+SECRET_KEY = os.getenv('SECRET_KEY', 'default-key')
+DEBUG = True # os.getenv('DEBUG') == 'True'
+ALLOWED_HOSTS = ['*']  # os.environ['ALLOWED_HOSTS'].split(',')
 
 # Application definition
 
@@ -141,7 +141,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        "rest_framework.permissions.AllowAny",
+         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageLimitPagination',
     'PAGE_SIZE': 6,
