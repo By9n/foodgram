@@ -4,17 +4,16 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-# UserCreateSerializer,
-from djoser.serializers import (
-    UserCreateSerializer as DjoserUserCreateSerializer)
+from djoser.serializers import \
+    UserCreateSerializer as DjoserUserCreateSerializer
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 
+from api.validators import validate_tags
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             RecipeShortLink, ShoppingCart, Tag)
 from users.models import Subscription
-from .validators import validate_tags
 
 User = get_user_model()
 
@@ -72,6 +71,7 @@ class UserSerializer(DjoserUserSerializer):
     #     user.save()
     #     return user
 
+
 class ShowFavoriteSerializer(serializers.ModelSerializer):
     """Сериализатор укороченной информации о рецепте."""
     class Meta:
@@ -90,7 +90,7 @@ class ShortLinkSerializer(serializers.ModelSerializer):
 
     def get_short_link(self, obj):
         """Создает полный URL для короткой ссылки."""
-        base_url = 'https://127.0.0.1:8000/s/'
+        base_url = os.path.join(settings.BASE_DIR, '/s/')
         return f"{base_url}{obj.short_link}"
 
     def to_representation(self, instance):
@@ -286,29 +286,20 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                 ingredient=ingredient, recipe=recipe, amount=i['amount']
             )
 
-    # def create_tags(self, tags, recipe):
-    #     for tag in tags:
-    #         Tag.objects.create(recipe=recipe, tag=tag)
-
     def create(self, validated_data):
         """Создание рецепта."""
         ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
         author = self.context.get('request').user
         recipe = Recipe.objects.create(author=author, **validated_data)
         self.create_ingredients(ingredients, recipe)
-        # self.create_tags(tags, recipe)
         return recipe
 
     def update(self, instance, validated_data):
         """Изменение рецепта."""
         instance.tags.clear()
-        # RecipeTag.objects.filter(recipe=instance).delete()
         RecipeIngredient.objects.filter(recipe=instance).delete()
         ingredients = validated_data.pop('ingredients', None)
-        tags = validated_data.pop('tags', None)
         self.create_ingredients(ingredients, instance)
-        #self.create_tags(tags, instance)
         instance.name = validated_data.pop('name')
         instance.text = validated_data.pop('text')
         if validated_data.get('image'):

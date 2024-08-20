@@ -1,3 +1,4 @@
+
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -5,114 +6,31 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
-
-# from rest_framework.permissions import DjangoModelPermissions
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.pagination import PageLimitPagination
 from api.permissions import IsAuthorAdminAuthenticatedOrReadOnly
 from api.serializers import (AvatarUserSerializer, CreateRecipeSerializer,
-                             UserSerializer, IngredientSerializer,
-                             RecipeSerializer, ShoppingCartSerializer,
-                             ShortLinkSerializer, ShowFavoriteSerializer,
-                             SubscriptionSerializer, TagSerializer)
+                             IngredientSerializer, RecipeSerializer,
+                             ShoppingCartSerializer, ShortLinkSerializer,
+                             ShowFavoriteSerializer, SubscriptionSerializer,
+                             TagSerializer)
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             RecipeShortLink, ShoppingCart, Tag)
 from users.models import Subscription, User
-
-
-# class UserViewSet(UserViewSet):
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
-#     pagination_class = PageLimitPagination
-#     # permission_classes = (IsAuthorAdminAuthenticatedOrReadOnly, )
-
-#     # def get_permissions(self):
-#     #     if self.action in ('list', 'retrieve'):
-#     #         return (AllowAny(),)
-#     #     return super().get_permissions()
-
-#     @action(detail=False, methods=['put'], url_path='me/avatar',
-#             permission_classes=[IsAuthenticated])
-#     def avatar(self, request, *args, **kwargs):
-#         """Добавление-обновление аватара пользователя."""
-#         user = request.user
-#         serializer = AvatarUserSerializer(user, data=request.data)
-
-#         if not request.data.get('avatar'):
-#             return Response(
-#                 {'detail': 'Поле avatar обязательно.'},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#     @avatar.mapping.delete
-#     def delete_avatar(self, request, *args, **kwargs):
-#         """Удаление аватара пользователя."""
-#         user = request.user
-#         if user.avatar:
-#             user.avatar.delete()
-#             user.save()
-#             return Response(status=status.HTTP_204_NO_CONTENT)
-#         return Response(
-#             {'detail': 'Аватар отсутствует.'},
-#             status=status.HTTP_400_BAD_REQUEST
-#         )
-
-#     @action(
-#         detail=True,
-#         methods=['post', 'delete'],
-#         permission_classes=[IsAuthenticated],
-#     )
-#     def subscribe(self, request, id):
-#         user = request.user
-#         author = get_object_or_404(User, pk=id)
-
-#         if request.method == 'POST':
-#             serializer = SubscriptionSerializer(
-#                 author, data=request.data, context={'request': request}
-#             )
-#             serializer.is_valid(raise_exception=True)
-#             Subscription.objects.create(user=user, author=author)
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-#         if request.method == 'DELETE':
-#             get_object_or_404(
-#                 Subscription,
-#                 user=user,
-#                 author=author
-#             ).delete()
-#             return Response(status=status.HTTP_204_NO_CONTENT)
-
-#     @action(detail=False, permission_classes=[IsAuthenticated])
-#     def subscriptions(self, request):
-#         user = request.user
-#         queryset = User.objects.filter(following__user=user)
-#         pages = self.paginate_queryset(queryset)
-#         serializer = SubscriptionSerializer(
-#             pages, many=True, context={'request': request}
-#         )
-#         return self.get_paginated_response(serializer.data)
 
 
 class UserViewSet(DjoserUserViewSet):
     """ViewSet модели пользователей"""
     queryset = User.objects.all()
     pagination_class = PageLimitPagination
-    # serializer_class = UserSerializer
-    # permission_classes = [IsAuthenticated]
 
-    # def get_permissions(self):
-    #     if self.action in ('list', 'retrieve'):
-    #         return (AllowAny(),)
-    #     return super().get_permissions()
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve'):
+            return (AllowAny(),)
+        return super().get_permissions()
 
     @action(detail=False, methods=['put'], url_path='me/avatar',
             permission_classes=[IsAuthenticated])

@@ -14,8 +14,8 @@ except FileNotFoundError:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'default_key')
-DEBUG = True # os.getenv('DEBUG') == 'True'
-ALLOWED_HOSTS = []  # os.environ['ALLOWED_HOSTS'].split(',')
+DEBUG = os.getenv('DEBUG', True)
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='*').split(',')
 
 # Application definition
 
