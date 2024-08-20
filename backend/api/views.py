@@ -106,7 +106,8 @@ class UserViewSet(DjoserUserViewSet):
     """ViewSet модели пользователей"""
     queryset = User.objects.all()
     pagination_class = PageLimitPagination
-    permission_classes = [IsAuthenticated]
+    # serializer_class = UserSerializer
+    # permission_classes = [IsAuthenticated]
 
     # def get_permissions(self):
     #     if self.action in ('list', 'retrieve'):

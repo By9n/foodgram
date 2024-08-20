@@ -1,4 +1,4 @@
-import random
+import uuid
 
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -9,8 +9,7 @@ from recipes.constants import (MAX_AMOUNT_INGREDIENT, MAX_COOKING_TIME,
                                MAX_LENGTH_NAME_INGREDIENT,
                                MAX_LENGTH_NAME_RECIPE, MAX_LENGTH_SHORT_LINK,
                                MAX_LENGTH_TAG, MAX_LENGTH_TEXT_RECIPE,
-                               MIN_AMOUNT_INGREDIENT, MIN_COOKING_TIME,
-                               STRING_FOR_RANDOM)
+                               MIN_AMOUNT_INGREDIENT, MIN_COOKING_TIME)
 
 User = get_user_model()
 
@@ -227,14 +226,5 @@ class RecipeShortLink(models.Model):
         super().save(*args, **kwargs)
 
     def generate_short_link(self):
-        characters = STRING_FOR_RANDOM
-        while True:
-            short_link = ''.join(random.choices(
-                characters,
-                k=MAX_LENGTH_SHORT_LINK
-            ))
-            if not RecipeShortLink.objects.filter(
-                short_link=short_link
-            ).exists():
-                break
+        short_link = uuid.uuid4().hex[:MAX_LENGTH_SHORT_LINK]
         return short_link

@@ -142,6 +142,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+        # 'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageLimitPagination',
     'PAGE_SIZE': 6,
@@ -155,9 +156,9 @@ DJOSER = {
         'user_create': 'api.serializers.CreateUserSerializer',
     },
     'PERMISSIONS': {
-        # "user": ('djoser.permissions.CurrentUserOrAdminOrReadOnly',),
-        "user_list": ('api.permissions.AllowAny',),
-        'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+        "user": ('djoser.permissions.CurrentUserOrAdminOrReadOnly',),
+        "user_list": ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
+        # 'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
         # 'user_list': ('rest_framework.permissions.AllowAny',),
     },
     'HIDE_USERS': False,
