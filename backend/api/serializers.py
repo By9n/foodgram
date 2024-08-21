@@ -4,8 +4,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from djoser.serializers import \
-    UserCreateSerializer as DjoserUserCreateSerializer
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
@@ -18,25 +16,11 @@ from users.models import Subscription
 User = get_user_model()
 
 
-class CreateUserSerializer(DjoserUserCreateSerializer):
-    """Сериализатор создания пользователя."""
-    class Meta:
-        model = User
-        fields = [
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'password'
-        ]
-
-
 class UserSerializer(DjoserUserSerializer):
-    """Сериализатор модели User"""
-    is_subscribed = serializers.SerializerMethodField(
-        read_only=True
-    )
+    """Сериализатор для работы с пользователями."""
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+    avatar = serializers.ImageField(required=False, allow_null=True)
+    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
@@ -46,89 +30,36 @@ class UserSerializer(DjoserUserSerializer):
             'username',
             'first_name',
             'last_name',
+            'password',
             'is_subscribed',
             'avatar'
         ]
-        read_only_fields = ('id',)
+        read_only_fields = ('id', 'is_subscribed', 'avatar')
 
     def get_is_subscribed(self, obj):
         user = self.context['request'].user
         if not user or user.is_anonymous:
             return False
-        return Subscription.objects.filter(
-            user=user, author=obj
-        ).exists()
+        return Subscription.objects.filter(user=user, author=obj).exists()
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request_path = self.context['request'].get_full_path()
+        if (
+            self.context['request'].method == 'POST'
+            and request_path == '/api/users/'
+        ):
+            representation.pop('is_subscribed', None)
+            representation.pop('avatar', None)
+            return representation
 
-# class UserSerializer(DjoserUserCreateSerializer):
-#     """Сериализатор для создания и отображения пользователя."""
-#     is_subscribed = serializers.SerializerMethodField(read_only=True)
-#     password = serializers.CharField(write_only=True)
-
-#     class Meta:
-#         model = User
-#         fields = [
-#             'email',
-#             'id',
-#             'username',
-#             'first_name',
-#             'last_name',
-#             'password',
-#             'is_subscribed',
-#             'avatar'
-#         ]
-#         read_only_fields = ('id',)
-
-#     def create(self, validated_data):
-#         # Сохраняем оригинальный пароль перед хешированием
-#         original_password = validated_data['password']
-
-#         # Создаем пользователя с хешированием пароля
-#         user = User.objects.create_user(
-#             email=validated_data['email'],
-#             username=validated_data['username'],
-#             first_name=validated_data['first_name'],
-#             last_name=validated_data['last_name'],
-#             password=original_password
-#         )
-
-#         # Добавляем оригинальный пароль к объекту пользователя
-#         user.plain_password = original_password
-
-#         return user
-
-#     def to_representation(self, instance):
-#         representation = super().to_representation(instance)
-
-#         # Если пользователь был только что создан,
-#         # возвращаем специальные поля
-#         if hasattr(instance, 'plain_password'):
-#             return {
-#                 'email': representation['email'],
-#                 'username': representation['username'],
-#                 'first_name': representation['first_name'],
-#                 'last_name': representation['last_name'],
-#                 'password': instance.plain_password
-#             }
-
-#         # Для всех остальных случаев возвращаем стандартный набор полей
-#         return {
-#             'email': representation['email'],
-#             'id': representation['id'],
-#             'username': representation['username'],
-#             'first_name': representation['first_name'],
-#             'last_name': representation['last_name'],
-#             'is_subscribed': representation['is_subscribed'],
-#             'avatar': representation['avatar']
-#         }
-
-#     def get_is_subscribed(self, obj):
-#         user = self.context['request'].user
-#         if not user or user.is_anonymous:
-#             return False
-#         return Subscription.objects.filter(
-#             user=user, author=obj
-#         ).exists()
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        user = super().create(validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
 
 
 class ShowFavoriteSerializer(serializers.ModelSerializer):
