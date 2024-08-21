@@ -59,17 +59,76 @@ class UserSerializer(DjoserUserSerializer):
             user=user, author=obj
         ).exists()
 
-    # def create(self, validated_data: dict) -> User:
-    #     """Создаёт нового пользователя с запрошенными полями."""
-    #     user = User(
-    #         email=validated_data["email"],
-    #         username=validated_data["username"],
-    #         first_name=validated_data["first_name"],
-    #         last_name=validated_data["last_name"],
-    #     )
-    #     user.set_password(validated_data["password"])
-    #     user.save()
-    #     return user
+
+# class UserSerializer(DjoserUserCreateSerializer):
+#     """Сериализатор для создания и отображения пользователя."""
+#     is_subscribed = serializers.SerializerMethodField(read_only=True)
+#     password = serializers.CharField(write_only=True)
+
+#     class Meta:
+#         model = User
+#         fields = [
+#             'email',
+#             'id',
+#             'username',
+#             'first_name',
+#             'last_name',
+#             'password',
+#             'is_subscribed',
+#             'avatar'
+#         ]
+#         read_only_fields = ('id',)
+
+#     def create(self, validated_data):
+#         # Сохраняем оригинальный пароль перед хешированием
+#         original_password = validated_data['password']
+
+#         # Создаем пользователя с хешированием пароля
+#         user = User.objects.create_user(
+#             email=validated_data['email'],
+#             username=validated_data['username'],
+#             first_name=validated_data['first_name'],
+#             last_name=validated_data['last_name'],
+#             password=original_password
+#         )
+
+#         # Добавляем оригинальный пароль к объекту пользователя
+#         user.plain_password = original_password
+
+#         return user
+
+#     def to_representation(self, instance):
+#         representation = super().to_representation(instance)
+
+#         # Если пользователь был только что создан,
+#         # возвращаем специальные поля
+#         if hasattr(instance, 'plain_password'):
+#             return {
+#                 'email': representation['email'],
+#                 'username': representation['username'],
+#                 'first_name': representation['first_name'],
+#                 'last_name': representation['last_name'],
+#                 'password': instance.plain_password
+#             }
+
+#         # Для всех остальных случаев возвращаем стандартный набор полей
+#         return {
+#             'email': representation['email'],
+#             'id': representation['id'],
+#             'username': representation['username'],
+#             'first_name': representation['first_name'],
+#             'last_name': representation['last_name'],
+#             'is_subscribed': representation['is_subscribed'],
+#             'avatar': representation['avatar']
+#         }
+
+#     def get_is_subscribed(self, obj):
+#         user = self.context['request'].user
+#         if not user or user.is_anonymous:
+#             return False
+#         return Subscription.objects.filter(
+#             user=user, author=obj
+#         ).exists()
 
 
 class ShowFavoriteSerializer(serializers.ModelSerializer):

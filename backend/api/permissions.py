@@ -24,14 +24,15 @@ class IsAuthorAdminAuthenticatedOrReadOnly(BasePermission):
 
 
 class UserPermission(BasePermission):
-    """Разрешений для UserViewSet, который применяет разные разрешения
+    """
+    Разрешений для UserViewSet, разные разрешения
     в зависимости от действия (action).
     """
     def has_permission(self, request, view):
         if view.action in ('list', 'retrieve'):
-            return True  
+            return True
         return request.user and request.user.is_authenticated
-    
+
     def has_object_permission(
             self, request, view, obj):
         return (
