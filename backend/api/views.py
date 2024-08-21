@@ -26,7 +26,7 @@ class UserViewSet(DjoserUserViewSet):
     """ViewSet модели пользователей"""
     queryset = User.objects.all()
     pagination_class = PageLimitPagination
-    permission_classes = [UserPermission,]
+    permission_classes = [UserPermission, ]
 
     @action(detail=False, methods=['put'], url_path='me/avatar',
             permission_classes=[IsAuthenticated])
