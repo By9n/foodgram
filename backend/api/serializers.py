@@ -51,8 +51,8 @@ class UserSerializer(DjoserUserSerializer):
         ):
             representation.pop('is_subscribed', None)
             representation.pop('avatar', None)
-            return representation
-
+        return representation
+        
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         user = super().create(validated_data)
