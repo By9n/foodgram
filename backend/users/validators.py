@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 
 
 def validate_alfanumeric_content(data):
-    if not match(r'^[A-Za-z0-9]*$', data):
+    if not match(r'^[A-Za-z0-9\-.а-яА-ЯёЁ]*$', data):
         raise ValidationError(
             'Имя пользователя должно содержать только буквы и цифры.'
         )

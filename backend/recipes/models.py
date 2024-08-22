@@ -10,6 +10,7 @@ from recipes.constants import (MAX_AMOUNT_INGREDIENT, MAX_COOKING_TIME,
                                MAX_LENGTH_NAME_RECIPE, MAX_LENGTH_SHORT_LINK,
                                MAX_LENGTH_TAG, MAX_LENGTH_TEXT_RECIPE,
                                MIN_AMOUNT_INGREDIENT, MIN_COOKING_TIME)
+from recipes.validators import validate_name
 
 User = get_user_model()
 
@@ -18,9 +19,9 @@ class Tag(models.Model):
     """Модель тегов"""
     name = models.CharField(
         verbose_name='Название тега',
+        validators=[validate_name, ],
         max_length=MAX_LENGTH_TAG,
-        unique=True,
-        blank=False,
+        unique=True
     )
     slug = models.SlugField(
         verbose_name='slug',
@@ -54,11 +55,11 @@ class Recipe(models.Model):
         'Ingredient',
         verbose_name='Список ингредиентов',
         through='RecipeIngredient',
-        through_fields=('recipe', 'ingredient', 'amount'),
         help_text='Выберете ингредиенты'
     )
     name = models.CharField(
         verbose_name='Название',
+        validators=[validate_name, ],
         max_length=MAX_LENGTH_NAME_RECIPE,
         help_text='Введите название рецепта'
     )
@@ -103,13 +104,11 @@ class Ingredient(models.Model):
     name = models.CharField(
         verbose_name='Название ингредиента',
         max_length=MAX_LENGTH_NAME_INGREDIENT,
-        blank=False,
         help_text='Введите название ингредиента'
     )
     measurement_unit = models.CharField(
         verbose_name='Единица измерения',
         max_length=MAX_LENGTH_MEASUREMENT_UNIT,
-        blank=False,
         help_text='Введите единицы измерения'
     )
 
@@ -129,19 +128,17 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепт',
-        related_name='recipes_ingredients',
+        related_name='ingredient_amounts',
         on_delete=models.CASCADE
     )
     ingredient = models.ForeignKey(
         Ingredient,
         verbose_name='Ингредиент',
-        related_name='+',
+        related_name='used_in_recipes',
         on_delete=models.CASCADE
     )
     amount = models.PositiveIntegerField(
         verbose_name='Количество',
-        blank=False,
-        null=False,
         validators=[
             MinValueValidator(
                 MIN_AMOUNT_INGREDIENT,
