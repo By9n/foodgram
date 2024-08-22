@@ -6,7 +6,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from drf_base64.fields import Base64ImageField
-from rest_framework import serializers
+from rest_framework import serializers, status
 
 from api.validators import validate_tags
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
@@ -333,7 +333,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
                 'request': self.context.get('request')
             }
         ).data
-
+from rest_framework.validators import ValidationError
 
 class SubscriptionSerializer(UserSerializer):
     """Сериализатор для подписок пользователя."""
@@ -356,6 +356,42 @@ class SubscriptionSerializer(UserSerializer):
             'recipes_count',
             'avatar'
         )
+
+
+    def validate(self, validated_data):
+        author_id = self.context.get(
+            'request').parser_context.get('kwargs').get('id')
+        author = get_object_or_404(User, id=author_id)
+        user = self.context.get('request').user
+        if user.follower.filter(author=author_id).exists():
+            raise ValidationError(
+                detail='Подписка уже существует',
+                code=status.HTTP_400_BAD_REQUEST,
+            )
+        if user == author:
+            raise ValidationError(
+                detail='Нельзя подписаться на самого себя',
+                code=status.HTTP_400_BAD_REQUEST,
+            )
+        return validated_data
+
+    # def validate(self, validated_data):
+    #     user = self.context['request'].user
+    #     author = validated_data.get('author')
+
+    #     if user.id == author.id:
+    #         raise ValidationError('Нельзя подписаться на самого себя.')
+
+    #     # Проверяем, существует ли уже подписка
+    #     if Subscription.objects.filter(user=user, author=author).exists():
+    #         raise ValidationError('Вы уже подписаны.')
+
+    #     return validated_data
+
+    # def create(self, validated_data):
+    #     user = self.context['request'].user
+    #     author = validated_data['author']
+    #     return Subscription.objects.create(user=user, author=author)
 
     def get_recipes(self, obj):
         request = self.context['request']
