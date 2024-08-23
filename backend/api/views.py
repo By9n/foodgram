@@ -14,13 +14,11 @@ from api.permissions import (IsAuthorAdminAuthenticatedOrReadOnly,
                              UserPermission)
 from api.serializers import (AvatarUserSerializer, CreateRecipeSerializer,
                              IngredientSerializer, RecipeSerializer,
-                             ShoppingCartSerializer, ShortLinkSerializer,
-                             ShowFavoriteSerializer, SubscriptionSerializer,
-                             TagSerializer)
+                             ShortLinkSerializer, ShowFavoriteSerializer,
+                             SubscriptionSerializer, TagSerializer)
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             RecipeShortLink, ShoppingCart, Tag)
 from users.models import Subscription, User
-from rest_framework.exceptions import ValidationError
 
 
 class UserViewSet(DjoserUserViewSet):
@@ -85,6 +83,12 @@ class UserViewSet(DjoserUserViewSet):
     #     author = get_object_or_404(User, pk=id)
 
     #     if request.method == 'POST':
+    #         Subscription.objects.create(user=user, author=author)
+    #         serializer = SubscriptionSerializer(author,
+    #                                             context={'request': request})
+    #         return Response(serializer.data,
+    #                         status=status.HTTP_201_CREATED)
+
     #         serializer = SubscriptionSerializer(
     #             author, data=request.data, context={'request': request}
     #         )
