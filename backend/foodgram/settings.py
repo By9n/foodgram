@@ -170,4 +170,4 @@ EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-SITE_URL = 'https://by9n-foodgramm'
+SITE_URL = 'https://foodgdrama.webhop.me'
