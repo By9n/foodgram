@@ -365,7 +365,12 @@ class SubscriptionSerializer(UserSerializer):
         limit = request.GET.get('recipes_limit')
         recipes = Recipe.objects.filter(author=obj)
         if limit:
-            recipes = recipes[:int(limit)]
+            try:
+                limit = int(limit)
+            except (ValueError, TypeError):
+                # Если преобразование не удалось, логируем или устанавливаем limit в None
+                limit = None
+        recipes = recipes[:int(limit)]
         serializer = ShowFavoriteSerializer(
             recipes,
             many=True
