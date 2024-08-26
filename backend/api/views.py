@@ -60,9 +60,10 @@ class UserViewSet(DjoserUserViewSet):
 
     @action(
         detail=False,
+        methods=['GET'], url_path='subscriptions',
         permission_classes=[IsAuthenticated]
     )
-    def subscriptions(self, request):
+    def get_subscriptions(self, request):
         """Просмотр листа подписок пользователя."""
         user = self.request.user
         author_ids = user.following.values_list('author_id', flat=True)
@@ -73,65 +74,50 @@ class UserViewSet(DjoserUserViewSet):
         )
         return self.get_paginated_response(serializer.data)
 
-    # @action(
-    #     methods=['post', 'delete'],
-    #     detail=True,
-    #     permission_classes=[IsAuthenticated]
-    # )
-    # def subscribe(self, request, id):
-    #     user = request.user
-    #     author = get_object_or_404(User, pk=id)
-
-    #     if request.method == 'POST':
-    #         Subscription.objects.create(user=user, author=author)
-    #         serializer = SubscriptionSerializer(author,
-    #                                             context={'request': request})
-    #         return Response(serializer.data,
-    #                         status=status.HTTP_201_CREATED)
-
-    #         serializer = SubscriptionSerializer(
-    #             author, data=request.data, context={'request': request}
-    #         )
-    #         serializer.is_valid(raise_exception=True)
-    #         Subscription.objects.create(user=user, author=author)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    #     if request.method == 'DELETE':
-    #         get_object_or_404(
-    #             Subscription, user=user, author=author
-    #         ).delete()
-    #         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(methods=['post', 'delete'], detail=True,
-            permission_classes=[IsAuthenticated])
-    def subscribe(self, request, id=None):
-        """Подписка на пользователей."""
+    @action(
+        detail=True, methods=['POST'], url_path='subscribe',
+        permission_classes=[IsAuthenticated]
+    )
+    def get_subscribe(self, request, id=None):
+        """Подписка на автора."""
         user = request.user
-        author = get_object_or_404(User, pk=id)
-
-        if user.id == author.id:
+        author = get_object_or_404(User, id=id)
+        serializer = SubscriptionSerializer(
+            author,
+            context={'request': request}
+        )
+        if user == author:
             return Response(
                 {'detail': 'Нельзя подписаться на самого себя.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        if Subscription.objects.filter(user=user, author=author).exists():
+            return Response(
+                {'detail': 'Вы уже подписаны на этого пользователя.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        Subscription.objects.create(user=user, author=author)
+        serializer = SubscriptionSerializer(
+            author, context={'request': request}
+        )
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED
+        )
 
-        instance = Subscription.objects.filter(author=author, user=user)
-        if request.method == 'POST':
-            if instance.exists():
-                return Response('Вы уже подписаны',
-                                status=status.HTTP_400_BAD_REQUEST)
-            Subscription.objects.create(user=user, author=author)
-            serializer = SubscriptionSerializer(author,
-                                                context={'request': request})
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
+    @get_subscribe.mapping.delete
+    def delete_subscribe(self, request, id=None):
+        """Отписка от автора."""
+        follower = request.user
+        author = get_object_or_404(User, id=id)
 
         if request.method == 'DELETE':
-            if instance.exists():
-                instance.delete()
+            del_count, _ = Subscription.objects.filter(
+                follower=follower, author=author
+            ).delete()
+
+            if del_count:
                 return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response('Вы не подписаны на автора',
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
