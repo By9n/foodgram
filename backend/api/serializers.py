@@ -9,6 +9,7 @@ from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 
 from api.validators import validate_tags
+from recipes.constants import MIN_AMOUNT_INGREDIENT
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             RecipeShortLink, ShoppingCart, Tag)
 from users.models import Subscription
@@ -80,7 +81,7 @@ class ShortLinkSerializer(serializers.ModelSerializer):
 
     def get_short_link(self, obj):
         """Создает полный URL для короткой ссылки."""
-        base_url = os.path.join(settings.BASE_DIR, '/s/')
+        base_url = os.path.join(settings.SITE_URL, '/s/')
         return f"{base_url}{obj.short_link}"
 
     def to_representation(self, instance):
@@ -261,7 +262,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('Ингридиенты должны '
                                                   'быть уникальными')
             ingredient_list.append(ingredient)
-            if int(ingredient_item['amount']) < 1:
+            if int(ingredient_item['amount']) < MIN_AMOUNT_INGREDIENT:
                 raise serializers.ValidationError({
                     'ingredients': ('Убедитесь, что значение количества '
                                     'ингредиента больше 0')
@@ -270,10 +271,12 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return data
 
     def create_ingredients(self, ingredients, recipe):
-        for i in ingredients:
-            ingredient = Ingredient.objects.get(id=i['id'])
+        for ingredient_for_create in ingredients:
+            ingredient = Ingredient.objects.get(id=ingredient_for_create['id'])
             RecipeIngredient.objects.create(
-                ingredient=ingredient, recipe=recipe, amount=i['amount']
+                ingredient=ingredient,
+                recipe=recipe,
+                amount=ingredient_for_create['amount']
             )
 
     def create(self, validated_data):
@@ -356,18 +359,6 @@ class SubscriptionSerializer(UserSerializer):
             'recipes_count',
             'avatar'
         )
-
-    # def create(self, validated_data):
-    #     request = self.context.get('request')
-    #     user = request.user
-    #     author = validated_data.get('author')
-    #     if user.following.filter(author=author).exists():
-    #         raise serializers.ValidationError('Подписка уже существует')
-    #     if user == author:
-    #         raise serializers.ValidationError(
-    #               'Нельзя подписаться на самого себя'
-    #       )
-    #     return super().create(validated_data)
 
     def get_recipes(self, obj):
         request = self.context['request']

@@ -10,7 +10,7 @@ from recipes.constants import (MAX_AMOUNT_INGREDIENT, MAX_COOKING_TIME,
                                MAX_LENGTH_NAME_RECIPE, MAX_LENGTH_SHORT_LINK,
                                MAX_LENGTH_TAG, MAX_LENGTH_TEXT_RECIPE,
                                MIN_AMOUNT_INGREDIENT, MIN_COOKING_TIME)
-from recipes.validators import validate_name
+from users.validators import validate_alfanumeric_content
 
 User = get_user_model()
 
@@ -19,7 +19,7 @@ class Tag(models.Model):
     """Модель тегов"""
     name = models.CharField(
         verbose_name='Название тега',
-        validators=[validate_name, ],
+        validators=[validate_alfanumeric_content, ],
         max_length=MAX_LENGTH_TAG,
         unique=True
     )
@@ -51,15 +51,9 @@ class Recipe(models.Model):
         on_delete=models.CASCADE,
         related_name='recipes'
     )
-    ingredients = models.ManyToManyField(
-        'Ingredient',
-        verbose_name='Список ингредиентов',
-        through='RecipeIngredient',
-        help_text='Выберете ингредиенты'
-    )
     name = models.CharField(
         verbose_name='Название',
-        validators=[validate_name, ],
+        validators=[validate_alfanumeric_content, ],
         max_length=MAX_LENGTH_NAME_RECIPE,
         help_text='Введите название рецепта'
     )
@@ -103,6 +97,7 @@ class Ingredient(models.Model):
     """Модель ингредиентов"""
     name = models.CharField(
         verbose_name='Название ингредиента',
+        validators=[validate_alfanumeric_content, ],
         max_length=MAX_LENGTH_NAME_INGREDIENT,
         help_text='Введите название ингредиента'
     )
@@ -128,13 +123,12 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепт',
-        related_name='ingredient_amounts',
         on_delete=models.CASCADE
     )
     ingredient = models.ForeignKey(
         Ingredient,
         verbose_name='Ингредиент',
-        related_name='used_in_recipes',
+        related_name='+',
         on_delete=models.CASCADE
     )
     amount = models.PositiveIntegerField(
