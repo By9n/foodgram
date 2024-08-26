@@ -17,7 +17,7 @@ from users.models import Subscription
 User = get_user_model()
 
 
-class UserSerializer(DjoserUserSerializer):
+class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для работы с пользователями."""
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     avatar = serializers.ImageField(required=False, allow_null=True)
