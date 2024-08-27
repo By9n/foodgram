@@ -25,7 +25,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     pagination_class = PageLimitPagination
     permission_classes = [IsAuthorAdminAuthenticatedOrReadOnly]
-    serializer_class = UserSerializer
+    # serializer_class = UserSerializer
 
     @action(detail=False, methods=['put'], url_path='me/avatar',
             permission_classes=[IsAuthenticated])
