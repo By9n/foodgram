@@ -35,6 +35,9 @@ class UserSerializer(serializers.ModelSerializer):
             'avatar'
         ]
         read_only_fields = ('id', 'is_subscribed', 'avatar')
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
 
     def get_is_subscribed(self, obj):
         user = self.context['request'].user
@@ -42,20 +45,18 @@ class UserSerializer(serializers.ModelSerializer):
             return False
         return Subscription.objects.filter(user=user, author=obj).exists()
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
+    def get_fields(self):
+        fields = super().get_fields()
         request_path = self.context['request'].get_full_path()
-        if (
-            self.context['request'].method == 'POST'
-            and request_path == '/api/users/'
-        ):
-            representation.pop('is_subscribed', None)
-            representation.pop('avatar', None)
-        return representation
+        if (self.context['request'].method == 'POST'
+                and request_path == '/api/users/'):
+            fields.pop('is_subscribed', None)
+            fields.pop('avatar', None)
+        return fields
 
-    def create(self, validated_data):
-        password = validated_data.pop('password', None)
-        user = super().create(validated_data)
+    def save(self, **kwargs):
+        password = self.validated_data.pop('password', None)
+        user = super().save(**kwargs)
         if password:
             user.set_password(password)
             user.save()
