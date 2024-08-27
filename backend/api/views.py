@@ -9,8 +9,7 @@ from rest_framework.response import Response
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.pagination import PageLimitPagination
-from api.permissions import (IsAuthorAdminAuthenticatedOrReadOnly,
-                             UserPermission)
+from api.permissions import IsAuthorAdminAuthenticatedOrReadOnly
 from api.serializers import (AvatarUserSerializer, CreateRecipeSerializer,
                              IngredientSerializer, RecipeSerializer,
                              ShortLinkSerializer, ShowFavoriteSerializer,
@@ -25,7 +24,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """ViewSet модели пользователей"""
     queryset = User.objects.all()
     pagination_class = PageLimitPagination
-    permission_classes = [UserPermission]
+    permission_classes = [IsAuthorAdminAuthenticatedOrReadOnly]
     serializer_class = UserSerializer
 
     @action(detail=False, methods=['put'], url_path='me/avatar',
