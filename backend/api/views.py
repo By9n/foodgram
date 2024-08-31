@@ -20,7 +20,14 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
 from users.models import Subscription, User
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
     """ViewSet модели пользователей"""
     queryset = User.objects.all()
     pagination_class = PageLimitPagination
