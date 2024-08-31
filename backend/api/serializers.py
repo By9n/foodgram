@@ -4,8 +4,11 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from djoser.serializers import UserSerializer as DjoserUserSerializer
+from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerializer
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
+from django.contrib.auth.hashers import make_password
 
 from api.validators import validate_tags
 from recipes.constants import MIN_AMOUNT_INGREDIENT
@@ -16,11 +19,10 @@ from users.models import Subscription
 User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(DjoserUserSerializer):
     """Сериализатор для работы с пользователями."""
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     avatar = serializers.ImageField(required=False, allow_null=True)
-    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
@@ -36,8 +38,15 @@ class UserSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ('id', 'is_subscribed', 'avatar')
         extra_kwargs = {
-            'password': {'write_only': True},
+            'password': {
+                'write_only': True,
+                'style': {'input_type': 'password'}
+            },
         }
+
+    def validate_password(self, value: str) -> str:
+        """Хешируем пароль перед сохранением"""
+        return make_password(value)
 
     def get_is_subscribed(self, obj):
         user = self.context['request'].user
@@ -54,13 +63,60 @@ class UserSerializer(serializers.ModelSerializer):
             fields.pop('avatar', None)
         return fields
 
-    def save(self, **kwargs):
-        password = self.validated_data.pop('password', None)
-        user = super().save(**kwargs)
-        if password:
-            user.set_password(password)
-            user.save()
-        return user
+    # def save(self, **kwargs):
+    #     password = self.validated_data.pop('password', None)
+    #     user = super().save(**kwargs)
+    #     if password:
+    #         user.set_password(password)
+    #         user.save()
+    #     return user
+
+
+# class UserSerializer(DjoserUserCreateSerializer):
+#     """Сериализатор для работы с пользователями."""
+#     is_subscribed = serializers.SerializerMethodField(read_only=True)
+#     avatar = serializers.ImageField(required=False, allow_null=True)
+#     password = serializers.CharField(write_only=True)
+
+#     class Meta:
+#         model = User
+#         fields = [
+#             'email',
+#             'id',
+#             'username',
+#             'first_name',
+#             'last_name',
+#             'password',
+#             'is_subscribed',
+#             'avatar'
+#         ]
+#         read_only_fields = ('id', 'is_subscribed', 'avatar')
+#         extra_kwargs = {
+#             'password': {'write_only': True},
+#         }
+
+#     def get_is_subscribed(self, obj):
+#         user = self.context['request'].user
+#         if not user or user.is_anonymous:
+#             return False
+#         return Subscription.objects.filter(user=user, author=obj).exists()
+
+#     def get_fields(self):
+#         fields = super().get_fields()
+#         request_path = self.context['request'].get_full_path()
+#         if (self.context['request'].method == 'POST'
+#                 and request_path == '/api/users/'):
+#             fields.pop('is_subscribed', None)
+#             fields.pop('avatar', None)
+#         return fields
+
+    # def save(self, **kwargs):
+    #     password = self.validated_data.pop('password', None)
+    #     user = super().save(**kwargs)
+    #     if password:
+    #         user.set_password(password)
+    #         user.save()
+    #     return user
 
 
 class ShowFavoriteSerializer(serializers.ModelSerializer):
@@ -81,7 +137,7 @@ class ShortLinkSerializer(serializers.ModelSerializer):
 
     def get_short_link(self, obj):
         """Создает полный URL для короткой ссылки."""
-        base_url = os.path.join(settings.SITE_URL, '/s/') 
+        base_url = os.path.join(settings.SITE_URL, '/s/')
         return f"{base_url}{obj.short_link}"
 
     def to_representation(self, instance):

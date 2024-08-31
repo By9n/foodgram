@@ -155,11 +155,12 @@ DJOSER = {
         'user_create': 'api.serializers.UserSerializer',
     },
     'PERMISSIONS': {
-        "user": ('djoser.permissions.CurrentUserOrAdminOrReadOnly',),
+        "user": ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
         "user_list": ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
     },
-    'HIDE_USERS': False,
-    'LOGIN_FIELD': 'email'
+    'USER_ID_FIELD': 'id',
+    'LOGIN_FIELD': 'email',
+    'HIDE USERS': False,
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
