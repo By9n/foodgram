@@ -1,6 +1,3 @@
-import os
-
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.http import Http404
@@ -80,8 +77,7 @@ class ShortLinkSerializer(serializers.ModelSerializer):
 
     def get_short_link(self, obj):
         """Создает полный URL для короткой ссылки."""
-        base_url = os.path.join(settings.SITE_URL, '/s/')
-        return f"{base_url}{obj.short_link}"
+        return f"/s/{obj.short_link}"
 
     def to_representation(self, instance):
         """Преобразует ключи в формат с дефисом."""
@@ -90,11 +86,11 @@ class ShortLinkSerializer(serializers.ModelSerializer):
             'short-link': representation['short_link']
         }
 
-    def get_recipes_count(self, obj: User) -> int:
+    def get_recipes_count(self, obj):
         """Функция расчета количества рецептов автора."""
         return obj.recipes.count()
 
-    def get_recipes(self, obj: User) -> dict:
+    def get_recipes(self, obj):
         """Функция выдачи рецептов автора с лимитом."""
         limit = self.context['request'].query_params.get('recipes_limit')
         queryset = obj.recipes.all()
@@ -103,7 +99,7 @@ class ShortLinkSerializer(serializers.ModelSerializer):
         serializer = ShowFavoriteSerializer(queryset, many=True)
         return serializer.data
 
-    def validate(self, attrs: dict) -> dict:
+    def validate(self, attrs):
         """Валидация для создания подписки."""
         request = self.context.get('request')
         author_id = request.parser_context.get('kwargs').get('id')
