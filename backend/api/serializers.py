@@ -81,7 +81,7 @@ class ShortLinkSerializer(serializers.ModelSerializer):
 
     def get_short_link(self, obj):
         """Создает полный URL для короткой ссылки."""
-        base_url = os.path.join(settings.SITE_URL, '/s/')
+        base_url = os.path.join(settings.SITE_URL, '/s/') 
         return f"{base_url}{obj.short_link}"
 
     def to_representation(self, instance):
