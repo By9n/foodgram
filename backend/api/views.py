@@ -2,7 +2,8 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, status, viewsets
+from djoser.views import UserViewSet as DjoserUserViewSet
+from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -13,26 +14,16 @@ from api.permissions import IsAuthorAdminAuthenticatedOrReadOnly
 from api.serializers import (AvatarUserSerializer, CreateRecipeSerializer,
                              IngredientSerializer, RecipeSerializer,
                              ShortLinkSerializer, ShowFavoriteSerializer,
-                             SubscriptionSerializer, TagSerializer,
-                             UserSerializer)
+                             SubscriptionSerializer, TagSerializer)
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             RecipeShortLink, ShoppingCart, Tag)
 from users.models import Subscription, User
 
 
-class UserViewSet(
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
+class UserViewSet(DjoserUserViewSet):
     """ViewSet модели пользователей"""
     queryset = User.objects.all()
     pagination_class = PageLimitPagination
-    # permission_classes = [IsAuthorAdminAuthenticatedOrReadOnly]
-    serializer_class = UserSerializer
 
     @action(detail=False, methods=['put'], url_path='me/avatar',
             permission_classes=[IsAuthenticated])
@@ -85,10 +76,10 @@ class UserViewSet(
         detail=True, methods=['POST'], url_path='subscribe',
         permission_classes=[IsAuthenticated]
     )
-    def get_subscribe(self, request, pk=None):
+    def get_subscribe(self, request, id=None):
         """Подписка на автора."""
         user = request.user
-        author = get_object_or_404(User, pk=pk)
+        author = get_object_or_404(User, pk=id)
         serializer = SubscriptionSerializer(
             author,
             context={'request': request}
@@ -112,10 +103,10 @@ class UserViewSet(
         )
 
     @get_subscribe.mapping.delete
-    def delete_subscribe(self, request, pk=None):
+    def delete_subscribe(self, request, id=None):
         """Отписка от автора."""
         follower = request.user
-        author = get_object_or_404(User, pk=pk)
+        author = get_object_or_404(User, pk=id)
         subscription = Subscription.objects.filter(
             user=follower, author=author)
         if not subscription.exists():

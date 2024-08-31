@@ -155,7 +155,7 @@ DJOSER = {
         'user_create': 'api.serializers.UserSerializer',
     },
     'PERMISSIONS': {
-        "user": ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
+        "user": ('api.permissions.IsAuthorAdminAuthenticatedOrReadOnly',),
         "user_list": ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
     },
     'USER_ID_FIELD': 'id',
