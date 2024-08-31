@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserSerializer as DjoserUserSerializer
-from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerializer
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
@@ -44,8 +43,7 @@ class UserSerializer(DjoserUserSerializer):
             },
         }
 
-    def validate_password(self, value: str) -> str:
-        """Хешируем пароль перед сохранением"""
+    def validate_password(self, value):
         return make_password(value)
 
     def get_is_subscribed(self, obj):
@@ -62,61 +60,6 @@ class UserSerializer(DjoserUserSerializer):
             fields.pop('is_subscribed', None)
             fields.pop('avatar', None)
         return fields
-
-    # def save(self, **kwargs):
-    #     password = self.validated_data.pop('password', None)
-    #     user = super().save(**kwargs)
-    #     if password:
-    #         user.set_password(password)
-    #         user.save()
-    #     return user
-
-
-# class UserSerializer(DjoserUserCreateSerializer):
-#     """Сериализатор для работы с пользователями."""
-#     is_subscribed = serializers.SerializerMethodField(read_only=True)
-#     avatar = serializers.ImageField(required=False, allow_null=True)
-#     password = serializers.CharField(write_only=True)
-
-#     class Meta:
-#         model = User
-#         fields = [
-#             'email',
-#             'id',
-#             'username',
-#             'first_name',
-#             'last_name',
-#             'password',
-#             'is_subscribed',
-#             'avatar'
-#         ]
-#         read_only_fields = ('id', 'is_subscribed', 'avatar')
-#         extra_kwargs = {
-#             'password': {'write_only': True},
-#         }
-
-#     def get_is_subscribed(self, obj):
-#         user = self.context['request'].user
-#         if not user or user.is_anonymous:
-#             return False
-#         return Subscription.objects.filter(user=user, author=obj).exists()
-
-#     def get_fields(self):
-#         fields = super().get_fields()
-#         request_path = self.context['request'].get_full_path()
-#         if (self.context['request'].method == 'POST'
-#                 and request_path == '/api/users/'):
-#             fields.pop('is_subscribed', None)
-#             fields.pop('avatar', None)
-#         return fields
-
-    # def save(self, **kwargs):
-    #     password = self.validated_data.pop('password', None)
-    #     user = super().save(**kwargs)
-    #     if password:
-    #         user.set_password(password)
-    #         user.save()
-    #     return user
 
 
 class ShowFavoriteSerializer(serializers.ModelSerializer):
@@ -363,13 +306,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return RecipeSerializer(instance, context={
             'request': self.context.get('request')
         }).data
-
-
-class TagSerializer(serializers.ModelSerializer):
-    """Serializer модели Tag"""
-    class Meta:
-        model = Tag
-        fields = ('id', 'name', 'slug')
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):

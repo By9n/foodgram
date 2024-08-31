@@ -3,7 +3,7 @@ from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 class IsAuthorAdminAuthenticatedOrReadOnly(BasePermission):
     """
-    Разрешение авториованного пользователя.
+    Разрешение авториованного пользователя и автора.
     Остальным только чтение объекта.
     """
 
@@ -17,6 +17,6 @@ class IsAuthorAdminAuthenticatedOrReadOnly(BasePermission):
         return (
             request.method in SAFE_METHODS
             or request.user.is_authenticated
-            # and request.user == obj.author
+            and request.user == obj.author
             # or request.user.is_staff
         )
