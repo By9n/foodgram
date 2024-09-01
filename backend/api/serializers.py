@@ -1,8 +1,6 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from djoser.serializers import UserSerializer as DjoserUserSerializer
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 
@@ -15,48 +13,27 @@ from users.models import Subscription
 User = get_user_model()
 
 
-class UserSerializer(DjoserUserSerializer):
-    """Сериализатор для работы с пользователями."""
+class UserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     avatar = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = User
-        fields = [
+        fields = (
             'email',
             'id',
             'username',
             'first_name',
             'last_name',
-            'password',
             'is_subscribed',
             'avatar'
-        ]
-        read_only_fields = ('id', 'is_subscribed', 'avatar')
-        extra_kwargs = {
-            'password': {
-                'write_only': True,
-                'style': {'input_type': 'password'}
-            },
-        }
-
-    def validate_password(self, value):
-        return make_password(value)
+        )
 
     def get_is_subscribed(self, obj):
         user = self.context['request'].user
         if not user or user.is_anonymous:
             return False
         return Subscription.objects.filter(user=user, author=obj).exists()
-
-    def get_fields(self):
-        fields = super().get_fields()
-        request_path = self.context['request'].get_full_path()
-        if (self.context['request'].method == 'POST'
-                and request_path == '/api/users/'):
-            fields.pop('is_subscribed', None)
-            fields.pop('avatar', None)
-        return fields
 
 
 class ShowFavoriteSerializer(serializers.ModelSerializer):

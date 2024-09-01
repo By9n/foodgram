@@ -4,8 +4,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from dotenv import load_dotenv
 
-load_dotenv()
-
 try:
     load_dotenv()
 except FileNotFoundError:
@@ -26,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
@@ -135,13 +134,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
+
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageLimitPagination',
     'PAGE_SIZE': 6,
@@ -150,17 +148,16 @@ REST_FRAMEWORK = {
 
 DJOSER = {
     'SERIALIZERS': {
-        'user': 'api.serializers.UserSerializer',
         'current_user': 'api.serializers.UserSerializer',
-        'user_create': 'api.serializers.UserSerializer',
+        'user': 'api.serializers.UserSerializer',
     },
     'PERMISSIONS': {
-        "user": ('api.permissions.IsAuthorAdminAuthenticatedOrReadOnly',),
-        "user_list": ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
+        'user_me': ['rest_framework.permissions.IsAuthenticated'],
+        'user': ['api.permissions.IsAuthorAdminAuthenticatedOrReadOnly'],
+        'user_list': ['rest_framework.permissions.AllowAny'],
     },
-    'USER_ID_FIELD': 'id',
+    'HIDE_USERS': False,
     'LOGIN_FIELD': 'email',
-    'HIDE USERS': False,
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'

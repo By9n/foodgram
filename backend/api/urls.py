@@ -15,6 +15,10 @@ router.register('tags', TagViewSet, basename='tags')
 
 
 urlpatterns = [
+    path('users/subscriptions/',
+         UserViewSet.as_view({'get': 'get_subscriptions'}),
+         name='user-subscriptions'),
+    path('', include('djoser.urls')),
     path('', include(router.urls)),
     path('auth/', include('djoser.urls.authtoken')),
     path('recipes/<int:recipe_id>/get-link/', get_short_link, name='get-link'),

@@ -2,8 +2,7 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet as DjoserUserViewSet
-from rest_framework import status, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -20,7 +19,14 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
 from users.models import Subscription, User
 
 
-class UserViewSet(DjoserUserViewSet):
+class UserViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
     """ViewSet модели пользователей"""
     queryset = User.objects.all()
     pagination_class = PageLimitPagination
@@ -76,10 +82,10 @@ class UserViewSet(DjoserUserViewSet):
         detail=True, methods=['POST'], url_path='subscribe',
         permission_classes=[IsAuthenticated]
     )
-    def get_subscribe(self, request, id=None):
+    def get_subscribe(self, request, pk=None):
         """Подписка на автора."""
         user = request.user
-        author = get_object_or_404(User, pk=id)
+        author = get_object_or_404(User, pk=pk)
         serializer = SubscriptionSerializer(
             author,
             context={'request': request}
@@ -103,10 +109,10 @@ class UserViewSet(DjoserUserViewSet):
         )
 
     @get_subscribe.mapping.delete
-    def delete_subscribe(self, request, id=None):
+    def delete_subscribe(self, request, pk=None):
         """Отписка от автора."""
         follower = request.user
-        author = get_object_or_404(User, pk=id)
+        author = get_object_or_404(User, pk=pk)
         subscription = Subscription.objects.filter(
             user=follower, author=author)
         if not subscription.exists():
