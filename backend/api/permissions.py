@@ -8,10 +8,6 @@ class IsAuthorAdminAuthenticatedOrReadOnly(BasePermission):
     """
 
     def has_permission(self, request, view):
-        if (view.basename == 'users'
-           #  and view.action == 'me'
-                and request.user.is_anonymous):
-            return False
         return (request.method in SAFE_METHODS
                 or request.user.is_authenticated
                 )
