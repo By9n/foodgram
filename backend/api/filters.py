@@ -14,7 +14,7 @@ class RecipeFilter(FilterSet):
     """Фильтр для списка рецептов."""
     tags = django_filters.MultipleChoiceFilter(
         field_name='tags__slug',
-        choices=[(tag.slug, tag.name) for tag in Tag.objects.all()]
+        choices=[(tag.name, tag.slug) for tag in Tag.objects.all()]
     )
     author = django_filters.ModelMultipleChoiceFilter(
         field_name='author__id',

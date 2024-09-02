@@ -24,7 +24,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_extensions',
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
@@ -152,7 +151,7 @@ DJOSER = {
         'user': 'api.serializers.UserSerializer',
     },
     'PERMISSIONS': {
-        'user_me': ['rest_framework.permissions.IsAuthenticated'],
+        'current_user': ['rest_framework.permissions.IsAuthenticated'],
         'user': ['api.permissions.IsAuthorAdminAuthenticatedOrReadOnly'],
         'user_list': ['rest_framework.permissions.AllowAny'],
     },
