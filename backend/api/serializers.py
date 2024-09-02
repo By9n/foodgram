@@ -44,8 +44,29 @@ class ShowFavoriteSerializer(serializers.ModelSerializer):
         read_only_fields = ('__all__',)
 
 
-class ShortLinkSerializer(serializers.ModelSerializer):
+class RecipeMixin:
+    """Миксин для сериализаторов, работающих с рецептами."""
+
+    def get_recipes(self, obj):
+        """Функция выдачи рецептов автора с лимитом."""
+        limit = self.context['request'].query_params.get('recipes_limit')
+        queryset = obj.recipes.all()
+        try:
+            limit = int(limit) if limit and int(limit) > 0 else None
+        except (ValueError, TypeError):
+            limit = None
+        if limit:
+            queryset = queryset[:limit]
+        serializer = ShowFavoriteSerializer(queryset, many=True)
+        return serializer.data
+
+    def get_recipes_count(self, obj):
+        """Функция расчета количества рецептов автора."""
+        return obj.recipes.count()
+
+class ShortLinkSerializer(serializers.ModelSerializer, RecipeMixin):
     """Сериализатор для короткой ссылки."""
+
     short_link = serializers.SerializerMethodField()
 
     class Meta:
@@ -63,35 +84,33 @@ class ShortLinkSerializer(serializers.ModelSerializer):
             'short-link': representation['short_link']
         }
 
-    def get_recipes_count(self, obj):
-        """Функция расчета количества рецептов автора."""
-        return obj.recipes.count()
 
-    def get_recipes(self, obj):
-        """Функция выдачи рецептов автора с лимитом."""
-        limit = self.context['request'].query_params.get('recipes_limit')
-        queryset = obj.recipes.all()
-        if limit:
-            queryset = queryset[:int(limit)]
-        serializer = ShowFavoriteSerializer(queryset, many=True)
-        return serializer.data
+class SubscriptionSerializer(serializers.ModelSerializer, RecipeMixin):
+    """Сериализатор для подписок пользователя."""
 
-    def validate(self, attrs):
-        """Валидация для создания подписки."""
-        request = self.context.get('request')
-        author_id = request.parser_context.get('kwargs').get('id')
-        author = get_object_or_404(User, id=author_id)
-        user = request.user
-        if user == author:
-            raise serializers.ValidationError(
-                'Нельзя подписаться на себя'
-            )
-        if Subscription.objects.filter(user=user,
-                                       author=author).exists():
-            raise serializers.ValidationError(
-                'Вы уже подписаны на этого автора'
-            )
-        return attrs
+    recipes = serializers.SerializerMethodField(read_only=True)
+    recipes_count = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count',
+            'avatar'
+        )
+
+    def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return Subscription.objects.filter(user=user, author=obj).exists()
 
 
 class AvatarUserSerializer(serializers.ModelSerializer):
@@ -303,49 +322,49 @@ class FavoriteSerializer(serializers.ModelSerializer):
         ).data
 
 
-class SubscriptionSerializer(UserSerializer):
-    """Сериализатор для подписок пользователя."""
-    recipes = serializers.SerializerMethodField(read_only=True)
-    recipes_count = serializers.SerializerMethodField()
-    is_subscribed = serializers.SerializerMethodField(
-        read_only=True
-    )
+# class SubscriptionSerializer(UserSerializer):
+#     """Сериализатор для подписок пользователя."""
+#     recipes = serializers.SerializerMethodField(read_only=True)
+#     recipes_count = serializers.SerializerMethodField()
+#     is_subscribed = serializers.SerializerMethodField(
+#         read_only=True
+#     )
 
-    class Meta:
-        model = User
-        fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'recipes',
-            'recipes_count',
-            'avatar'
-        )
+#     class Meta:
+#         model = User
+#         fields = (
+#             'email',
+#             'id',
+#             'username',
+#             'first_name',
+#             'last_name',
+#             'is_subscribed',
+#             'recipes',
+#             'recipes_count',
+#             'avatar'
+#         )
 
-    def get_recipes(self, obj):
-        request = self.context['request']
-        limit = request.GET.get('recipes_limit')
-        recipes = Recipe.objects.filter(author=obj)
-        try:
-            limit = int(limit) if limit and int(limit) > 0 else None
-        except (ValueError, TypeError):
-            limit = None
-        if limit:
-            recipes = recipes[:limit]
-        serializer = ShowFavoriteSerializer(
-            recipes,
-            many=True
-        )
-        return serializer.data
+#     def get_recipes(self, obj):
+#         request = self.context['request']
+#         limit = request.GET.get('recipes_limit')
+#         recipes = Recipe.objects.filter(author=obj)
+#         try:
+#             limit = int(limit) if limit and int(limit) > 0 else None
+#         except (ValueError, TypeError):
+#             limit = None
+#         if limit:
+#             recipes = recipes[:limit]
+#         serializer = ShowFavoriteSerializer(
+#             recipes,
+#             many=True
+#         )
+#         return serializer.data
 
-    def get_recipes_count(self, object):
-        return object.recipes.count()
+#     def get_recipes_count(self, object):
+#         return object.recipes.count()
 
-    def get_is_subscribed(self, obj):
-        user = self.context.get('request').user
-        if user.is_anonymous:
-            return False
-        return Subscription.objects.filter(user=user, author=obj).exists()
+#     def get_is_subscribed(self, obj):
+#         user = self.context.get('request').user
+#         if user.is_anonymous:
+#             return False
+#         return Subscription.objects.filter(user=user, author=obj).exists()
