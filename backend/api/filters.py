@@ -1,5 +1,5 @@
-import django_filters
-from django_filters.rest_framework import BooleanFilter, FilterSet
+# import django_filters
+from django_filters.rest_framework import BooleanFilter, FilterSet, AllValuesMultipleFilter, ModelMultipleChoiceFilter
 from rest_framework.filters import SearchFilter
 
 from recipes.models import Recipe, Tag
@@ -12,11 +12,10 @@ class IngredientFilter(SearchFilter):
 
 class RecipeFilter(FilterSet):
     """Фильтр для списка рецептов."""
-    tags = django_filters.MultipleChoiceFilter(
-        field_name='tags__slug',
-        choices=[(tag.name, tag.slug) for tag in Tag.objects.all()]
+    tags = AllValuesMultipleFilter(
+        field_name='tags__slug'
     )
-    author = django_filters.ModelMultipleChoiceFilter(
+    author = ModelMultipleChoiceFilter(
         field_name='author__id',
         to_field_name='id',
         queryset=User.objects.all()
