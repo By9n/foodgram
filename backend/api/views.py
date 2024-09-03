@@ -57,10 +57,10 @@ class UserViewSet(viewsets.GenericViewSet):
 
     @action(
         detail=False,
-        methods=['GET'], url_path='subscriptions',
+        methods=['get'], url_path='subscriptions',
         permission_classes=[IsAuthenticated]
     )
-    def get_subscriptions(self, request):
+    def get_subscriptions(self, request, *args, **kwargs):
         """Просмотр листа подписок пользователя."""
         user = self.request.user
         author_ids = user.following.values_list('author_id', flat=True)

@@ -64,6 +64,7 @@ class RecipeMixin:
         """Функция расчета количества рецептов автора."""
         return obj.recipes.count()
 
+
 class ShortLinkSerializer(serializers.ModelSerializer, RecipeMixin):
     """Сериализатор для короткой ссылки."""
 
