@@ -138,7 +138,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageLimitPagination',
     'PAGE_SIZE': 6,
@@ -151,8 +151,7 @@ DJOSER = {
         'user': 'api.serializers.UserSerializer',
     },
     'PERMISSIONS': {
-        'current_user': ['rest_framework.permissions.IsAuthenticated'],
-        'user': ['api.permissions.IsAuthorAdminAuthenticatedOrReadOnly'],
+        'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
         'user_list': ['rest_framework.permissions.AllowAny'],
     },
     'HIDE_USERS': False,
