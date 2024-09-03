@@ -26,7 +26,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    'django_filters',
     'djoser',
     'users.apps.UsersConfig',
     'api.apps.ApiConfig',
@@ -138,7 +137,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageLimitPagination',
     'PAGE_SIZE': 6,
@@ -152,7 +151,6 @@ DJOSER = {
     },
     'PERMISSIONS': {
         'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
-        'user_list': ['rest_framework.permissions.AllowAny'],
     },
     'HIDE_USERS': False,
     'LOGIN_FIELD': 'email',
