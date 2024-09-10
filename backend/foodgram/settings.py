@@ -12,7 +12,7 @@ except FileNotFoundError:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'default_key')
-DEBUG = os.getenv('DEBUG', True)
+DEBUG = os.getenv('DEBUG', False)
 ALLOWED_HOSTS = ['*'] # os.getenv('ALLOWED_HOSTS', default='localhost').split(',')
 
 # Application definition
@@ -117,7 +117,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATIC_URL = '/static/'
+STATIC_URL = '/backend_static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/backend_media/'
