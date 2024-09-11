@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 
 from .models import Subscription, User
 
@@ -12,7 +13,7 @@ class UserAdmin(admin.ModelAdmin):
         'email',
         'first_name',
         'last_name',
-        'avatar'
+        'avatar_tag'
     )
     list_display_links = ('id', 'username',)
     search_fields = ('username', 'email')
@@ -24,6 +25,13 @@ class UserAdmin(admin.ModelAdmin):
     )
     list_fields = ('first_name',)
     empty_value_display = '-пусто-'
+
+    def avatar_tag(self, obj):
+        if obj.avatar:
+            return mark_safe('<img src="{}" width="50" height="50" />'.format(obj.avatar.url))
+        return None
+
+    avatar_tag.short_description = 'Аватар'
 
 
 @admin.register(Subscription)
