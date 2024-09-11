@@ -12,9 +12,9 @@ except FileNotFoundError:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'default_key')
-DEBUG = True # os.getenv('DEBUG', False)
+DEBUG = os.getenv('DEBUG', False)
 ALLOWED_HOSTS = ['*']
-# os.getenv('ALLOWED_HOSTS', default='localhost').split(',')
+#  os.getenv('ALLOWED_HOSTS', default='localhost').split(',')
 
 # Application definition
 
