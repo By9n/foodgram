@@ -1,0 +1,9 @@
+SECRET_KEY='django-secret-key' # Секретный ключ для Джанго
+DEBUG=True # Режим отладки
+ALLOWED_HOSTS=51.250.29.91,127.0.0.1,localhost,foodgdrama.webhop.me # Возможные адреса хостов
+DB_ENGINE=django.db.backends.postgresql # работаем с БД postgresql
+POSTGRES_DB=foodgram_db # имя БД
+POSTGRES_USER=foodgram_user # имя пользователя БД
+POSTGRES_PASSWORD=foodgram_password # пароль от БД
+DB_HOST=db
+DB_PORT=5432
