@@ -26,7 +26,17 @@
 * Workflow
 
 ## Server IP:
+
 https://foodgdrama.webhop.me
+
+Адрес админки:
+https://foodgdrama.webhop.me/admin
+
+Данные для входа:
+```
+email - food@mail.ru
+password - 123
+```
 
 ## Запуск проекта локально:
 
