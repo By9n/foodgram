@@ -1,0 +1,4 @@
+python manage.py import_csv
+
+Ввести эту команду в enrypoins.sh при первом запуске сервера
+
