@@ -81,7 +81,7 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        source: "docker-compose.yml"
+        source: "infra/docker-compose.yml"
         target: "foodgram"
     - name: Copy nginx.production.yml via ssh
       uses: appleboy/scp-action@v0.1.3
@@ -90,7 +90,7 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        source: "nginx.conf"
+        source: "infra/nginx.conf"
         target: "foodgram"
     - name: Executing remote ssh commands to deploy
       uses: appleboy/ssh-action@master
