@@ -28,7 +28,11 @@ class UserAdmin(admin.ModelAdmin):
 
     def avatar_tag(self, obj):
         if obj.avatar:
-            return mark_safe('<img src="{}" width="50" height="50" />'.format(obj.avatar.url))
+            return mark_safe(
+                '<img src="{}" width="50" height="50" />'.format(
+                    obj.avatar.url
+                )
+            )
         return None
 
     avatar_tag.short_description = 'Аватар'
