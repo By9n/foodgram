@@ -13,7 +13,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'default_key')
 DEBUG = os.getenv('DEBUG', False)
-ALLOWED_HOSTS = ['*'] # os.getenv('ALLOWED_HOSTS', default='localhost').split(',')
+ALLOWED_HOSTS = ['*']
+# os.getenv('ALLOWED_HOSTS', default='localhost').split(',')
 
 # Application definition
 

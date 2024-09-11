@@ -31,8 +31,8 @@ class Command(BaseCommand):
 
                 if header != EXPECTED_HEADERS[model]:
                     raise ValueError(
-                        f'Неверный формат файла {
-                            csv_file.name}: неправильные заголовки полей.'
+                        f'Неверный формат файла {csv_file.name}: '
+                        f'неправильные заголовки полей.'
                     )
                 model.objects.bulk_create(model(**data) for data in reader)
             self.stdout.write(
