@@ -26,9 +26,14 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'author', 'image_tag')
-    search_fields = ('name', 'author__username', 'author__email')
-    list_filter = ('tags',)
+    list_display = (
+        'id', 'name', 'author',
+        'image_tag', 'favorites_count'
+    )
+    inlines = (RecipeIngredientInline,)
+    search_fields = ('name', 'author__username',
+                     'author__email', 'ingredients')
+    list_filter = ('author', 'name', 'tags',)
     ordering = ('-id',)
 
     def image_tag(self, obj):
