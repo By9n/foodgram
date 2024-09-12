@@ -2,3 +2,4 @@ python manage.py import_csv
 
 Ввести эту команду в enrypoins.sh при первом запуске сервера
 
+          sudo docker rm -f foodgram-backend-1 foodgram-frontend foodgram_db foodgram_gateway || true

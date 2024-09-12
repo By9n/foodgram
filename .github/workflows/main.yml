@@ -103,7 +103,6 @@ jobs:
         script: |
           cd foodgram
           sudo docker compose -v down
-          sudo docker rm -f foodgram-backend foodgram-frontend foodgram_db foodgram_gateway || true
           sudo docker compose pull
           sudo docker compose up -d --build
         port: 22
