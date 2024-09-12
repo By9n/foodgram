@@ -100,11 +100,11 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         debug: true
-        script: 
+        script: |
           cd foodgram/infra
           sudo docker compose down -v
           sudo docker compose pull
-          sudo docker compose up -d --build
+          sudo docker compose up --build -d
         port: 22
         sync: false
         use_insecure_cipher: false
