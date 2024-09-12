@@ -102,7 +102,7 @@ jobs:
         debug: true
         script: |
           cd foodgram
-          sudo docker compose -v down
+          sudo docker compose down -v
           sudo docker compose pull
           sudo docker compose up -d --build
         port: 22
