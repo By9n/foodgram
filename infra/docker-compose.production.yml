@@ -16,7 +16,7 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env
-    restart: always
+    # restart: always
     networks:
         - foodgram-network
 

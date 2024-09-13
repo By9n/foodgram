@@ -36,6 +36,12 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ('author', 'name', 'tags', 'ingredients')
     ordering = ('-id',)
 
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for instance in instances:
+            if  not instance:
+                raise 'Существует инстанс модели с некоторыми параметрами!'
+
     def image_tag(self, obj):
         if obj.image:
             return mark_safe('<img src="{}" width="150"'
