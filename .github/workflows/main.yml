@@ -101,7 +101,7 @@ jobs:
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         debug: true
         script: |
-          cd foodgram/infra
+          cd foodgram
           sudo docker compose down -v
           sudo docker compose -f docker-compose.yml pull
           sudo docker compose up --build -d
