@@ -33,7 +33,7 @@ class RecipeAdmin(admin.ModelAdmin):
     inlines = (RecipeIngredientInline,)
     search_fields = ('name', 'author__username',
                      'author__email', 'ingredients')
-    list_filter = ('author', 'name', 'tags',)
+    list_filter = ('author', 'name', 'tags', 'ingredients')
     ordering = ('-id',)
 
     def image_tag(self, obj):
