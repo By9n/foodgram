@@ -1,65 +1,52 @@
-version: '3.9'
+version: '3'
 
 volumes:
-  postgres_data:
-  backend_static:
-  backend_media:
-  frontend_static:
-
-networks:
-  foodgram-network:
+  pg_data_food:
+  static_volume_food:
+  media_volume_food:
 
 services:
-    db:
-      container_name: foodgram_db
-      image: postgres:13.0-alpine
-      restart: unless-stopped
-      volumes:
-        - postgres_data:/var/lib/postgresql/data/
-      env_file:
-        - ../.env
-      networks:
-        - foodgram-network
 
-    backend:
-      container_name: foodgram_backend
-      image: by9n/foodgram_backend:latest
-      restart: unless-stopped
-      volumes:
-        - backend_static:/app/static/
-        - backend_media:/app/media/
-      depends_on:
-        - db
-      env_file:
-        - ../.env
-      networks:
-        - foodgram-network
+  db:
+    container_name: db
+    image: postgres:13.0-alpine
+    env_file: .env
+    volumes:
+      - pg_data_food:/var/lib/postgresql/data/
+    restart: always
 
-    frontend:
-      container_name: foodgram-front
-      image: by9n/foodgram_frontend:latest
-      depends_on:
-        - db
-        - backend
-      volumes:
-        - frontend_static:/app/result_build/build
-      networks:
-        - foodgram-network
+  backend:
+    container_name: backend
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    env_file: .env
+    volumes:
+      - static_volume_food:/app/static/
+      - media_volume_food:/app/media/
+    depends_on:
+      - db
+    restart: always
 
-    nginx:
-      container_name: foodgram_nginx
-      image: nginx:1.21.3-alpine
-      restart: unless-stopped
-      ports:
-        - "9090:80"
-      volumes:
-        - ./nginx.conf:/etc/nginx/conf.d/default.conf
-        - frontend_static:/usr/share/nginx/html/
-        - ../docs/:/usr/share/nginx/html/api/docs/
-        - backend_static:/backend_static
-        - backend_media:/backend_media
-      depends_on:
-        - backend
-        - frontend
-      networks:
-        - foodgram-network
+  frontend:
+    container_name: frontend
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ../frontend/:/app/result_build/
+
+  nginx:
+    container_name: nginx
+    image: nginx:1.19.3
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ../frontend/build:/usr/share/nginx/html/
+      - ../docs/:/usr/share/nginx/html/api/docs/
+      - static_volume_food:/var/html/static/
+      - media_volume_food:/var/html/media/
+    depends_on:
+      - backend
+      - frontend

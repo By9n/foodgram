@@ -81,7 +81,7 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        source: "infra/docker-compose.yml"
+        source: "infra/docker-compose.production.yml"
         target: "foodgram"
     - name: Copy nginx.production.yml via ssh
       uses: appleboy/scp-action@v0.1.3
@@ -90,7 +90,7 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        source: "infra/nginx.conf"
+        source: "infra/nginx.production.conf"
         target: "foodgram"
     - name: Executing remote ssh commands to deploy
       uses: appleboy/ssh-action@master
@@ -101,10 +101,10 @@ jobs:
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         debug: true
         script: |
-          cd foodgram
-          sudo docker compose down -v
-          sudo docker compose -f docker-compose.yml pull
-          sudo docker compose up --build -d
+          cd foodgram/infra
+          sudo docker compose -f docker-compose.production.yml -v down
+          sudo docker rm -f foodgram_backend foodgram_frontend foodgram_db foodgram_gateway || true
+          sudo docker compose -f docker-compose.production.yml up -d --build
         port: 22
         sync: false
         use_insecure_cipher: false

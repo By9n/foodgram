@@ -44,7 +44,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
     image_tag.short_description = 'Фото рецепта'
 
-    @admin.display(description='Количество рецептов в избранном')
+    @admin.display(description='Количество в избранных')
     def favorites_count(self, obj):
         """Возвращает количество добавлений рецепта в избранное."""
         if Favorite.objects.filter(recipe=obj).exists():
