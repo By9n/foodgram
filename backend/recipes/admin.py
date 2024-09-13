@@ -40,7 +40,7 @@ class RecipeAdmin(admin.ModelAdmin):
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
         for instance in instances:
-            if  not instance:
+            if not instance:
                 raise 'Существует инстанс модели с некоторыми параметрами!'
 
     def image_tag(self, obj):
