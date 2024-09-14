@@ -103,6 +103,7 @@ jobs:
         script: |
           cd foodgram/infra
           sudo docker compose -f docker-compose.production.yml down
+          sudo docker compose -f docker-compose.production.yml pull
           sudo docker compose -f docker-compose.production.yml up -d --build
         port: 22
         sync: false
