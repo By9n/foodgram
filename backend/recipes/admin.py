@@ -68,17 +68,23 @@ class RecipeAdmin(admin.ModelAdmin):
             return Favorite.objects.filter(recipe=obj).count()
         return 0
 
-    def clean(self):
-        # Получаем связанные ингредиенты для текущего рецепта
-        ingredients = sum(
-            [list(inline.get_queryset())
-             for inline in self.get_inline_instances()], []
-        )
-        if not ingredients:
-            raise forms.ValidationError(
-                "Необходимо добавить хотя бы один ингредиент к рецепту.")
+    def save_model(self, request, obj, form, change):
+        # Проверяем наличие ингредиентов перед сохранением рецепта
+        ingredients = obj.recipeingredient_set.all()
+        if not ingredients.exists():
+            raise ValidationError("Необходимо добавить хотя бы один ингредиент к рецепту.")
+        
+        super().save_model(request, obj, form, change)
 
-        super().clean()
+    def save_related(self, request, form, formsets, change):
+        # Переопределяем save_related для проверки ингредиентов в инлайн-формсетах
+        instances = form.save(commit=False)
+        for instance in instances:
+            ingredients = instance.recipeingredient_set.all()
+            if not ingredients.exists():
+                raise ValidationError("Необходимо добавить хотя бы один ингредиент к рецепту.")
+        
+        super().save_related(request, form, formsets, change)
 
 
 @admin.register(Ingredient)
