@@ -1,13 +1,30 @@
+from django import forms
 from django.contrib import admin
+from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 
 
+class IngredientAdminForm(forms.ModelForm):
+    class Meta:
+        model = RecipeIngredient
+        field = ['name', 'measurement_unit']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get('name')
+        if not name:
+            raise ValidationError("Название ингредиента не может быть пустым.")
+        return cleaned_data
+
+
+
 class RecipeIngredientInline(admin.TabularInline):
     """Админ-модель рецептов_ингредиентов"""
     model = RecipeIngredient
+    form = IngredientAdminForm
     extra = 1
     min_num = 1
 
@@ -37,11 +54,6 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ('author', 'name', 'tags', 'ingredients')
     ordering = ('-id',)
 
-    def save_formset(self, request, form, formset, change):
-        instances = formset.save(commit=False)
-        for instance in instances:
-            if not instance:
-                raise 'Существует инстанс модели с некоторыми параметрами!'
 
     def image_tag(self, obj):
         if obj.image:
@@ -57,6 +69,13 @@ class RecipeAdmin(admin.ModelAdmin):
         if Favorite.objects.filter(recipe=obj).exists():
             return Favorite.objects.filter(recipe=obj).count()
         return 0
+
+    def save_formset(self, request, form, formset, change):
+        """Сохраняет инлайн формы, выполняя дополнительные действия."""
+        super().save_formset(request, form, formset, change)
+
+        if not any(form.cleaned_data for form in formset):
+            raise ValidationError("Нельзя сохранить рецепт без хотя бы одного ингредиента.")
 
 
 @admin.register(Ingredient)
