@@ -7,16 +7,18 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 
 
-class IngredientAdminForm(forms.ModelForm):
+class RecipeForm(forms.ModelForm):
     class Meta:
-        model = RecipeIngredient
-        field = ['name', 'measurement_unit']
+        model = Recipe
+        fields = '__all__'
 
     def clean(self):
         cleaned_data = super().clean()
-        name = cleaned_data.get('name')
-        if not name:
-            raise ValidationError("Название ингредиента не может быть пустым.")
+        ingredients = self.instance.recipeingredient_set.all()
+        if not ingredients.exists():
+            raise forms.ValidationError(
+                "Необходимо добавить хотя бы один ингредиент к рецепту."
+            )
         return cleaned_data
 
 
@@ -43,6 +45,7 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
+    form = RecipeForm
     list_display = (
         'id', 'name', 'author',
         'image_tag', 'favorites_count'
