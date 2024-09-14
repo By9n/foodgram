@@ -72,18 +72,22 @@ class RecipeAdmin(admin.ModelAdmin):
         # Проверяем наличие ингредиентов перед сохранением рецепта
         ingredients = obj.recipeingredient_set.all()
         if not ingredients.exists():
-            raise ValidationError("Необходимо добавить хотя бы один ингредиент к рецепту.")
-        
+            raise ValidationError(
+                "Необходимо добавить хотя бы один ингредиент к рецепту."
+            )
+
         super().save_model(request, obj, form, change)
 
     def save_related(self, request, form, formsets, change):
-        # Переопределяем save_related для проверки ингредиентов в инлайн-формсетах
+        # Переопределяем save_related для проверки ингредиентов в формсетах
         instances = form.save(commit=False)
         for instance in instances:
             ingredients = instance.recipeingredient_set.all()
             if not ingredients.exists():
-                raise ValidationError("Необходимо добавить хотя бы один ингредиент к рецепту.")
-        
+                raise ValidationError(
+                    "Необходимо добавить хотя бы один ингредиент к рецепту."
+                )
+
         super().save_related(request, form, formsets, change)
 
 
