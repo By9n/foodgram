@@ -45,7 +45,6 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    form = RecipeForm
     list_display = (
         'id', 'name', 'author',
         'image_tag', 'favorites_count'
@@ -78,20 +77,7 @@ class RecipeAdmin(admin.ModelAdmin):
             raise ValidationError(
                 "Необходимо добавить хотя бы один ингредиент к рецепту."
             )
-
         super().save_model(request, obj, form, change)
-
-    def save_related(self, request, form, formsets, change):
-        # Переопределяем save_related для проверки ингредиентов в формсетах
-        instances = form.save(commit=False)
-        for instance in instances:
-            ingredients = instance.recipeingredient_set.all()
-            if not ingredients.exists():
-                raise ValidationError(
-                    "Необходимо добавить хотя бы один ингредиент к рецепту."
-                )
-
-        super().save_related(request, form, formsets, change)
 
 
 @admin.register(Ingredient)
