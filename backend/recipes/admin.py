@@ -23,7 +23,7 @@ class IngredientAdminForm(forms.ModelForm):
 class RecipeIngredientInline(admin.TabularInline):
     """Админ-модель рецептов_ингредиентов"""
     model = RecipeIngredient
-    form = IngredientAdminForm
+    # form = IngredientAdminForm
     extra = 1
     min_num = 1
 
@@ -68,13 +68,17 @@ class RecipeAdmin(admin.ModelAdmin):
             return Favorite.objects.filter(recipe=obj).count()
         return 0
 
-    def save_formset(self, request, form, formset, change):
-        """Сохраняет инлайн формы, выполняя дополнительные действия."""
-        super().save_formset(request, form, formset, change)
+    def clean(self):
+        # Получаем связанные ингредиенты для текущего рецепта
+        ingredients = sum(
+            [list(inline.get_queryset())
+             for inline in self.get_inline_instances()], []
+        )
+        if not ingredients:
+            raise forms.ValidationError(
+                "Необходимо добавить хотя бы один ингредиент к рецепту.")
 
-        if not any(form.cleaned_data for form in formset):
-            raise ValidationError(
-                "Нельзя сохранить рецепт без хотя бы одного ингредиента.")
+        super().clean()
 
 
 @admin.register(Ingredient)
