@@ -20,7 +20,6 @@ class IngredientAdminForm(forms.ModelForm):
         return cleaned_data
 
 
-
 class RecipeIngredientInline(admin.TabularInline):
     """Админ-модель рецептов_ингредиентов"""
     model = RecipeIngredient
@@ -54,7 +53,6 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ('author', 'name', 'tags', 'ingredients')
     ordering = ('-id',)
 
-
     def image_tag(self, obj):
         if obj.image:
             return mark_safe('<img src="{}" width="150"'
@@ -75,7 +73,8 @@ class RecipeAdmin(admin.ModelAdmin):
         super().save_formset(request, form, formset, change)
 
         if not any(form.cleaned_data for form in formset):
-            raise ValidationError("Нельзя сохранить рецепт без хотя бы одного ингредиента.")
+            raise ValidationError(
+                "Нельзя сохранить рецепт без хотя бы одного ингредиента.")
 
 
 @admin.register(Ingredient)
