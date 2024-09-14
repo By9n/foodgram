@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.core.exceptions import ValidationError
-from django.utils.safestring import mark_safe
+# from django.utils.safestring import mark_safe
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
@@ -47,8 +47,7 @@ class TagAdmin(admin.ModelAdmin):
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'name', 'author',
-         'favorites_count'
-    ) # 'image_tag',
+        'favorites_count')  # 'image_tag',
     # inlines = (RecipeIngredientInline,)
     search_fields = ('name', 'author__username',
                      'author__email', 'ingredients')
