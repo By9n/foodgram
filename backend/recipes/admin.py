@@ -47,21 +47,21 @@ class TagAdmin(admin.ModelAdmin):
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'name', 'author',
-        'image_tag', 'favorites_count'
-    )
+         'favorites_count'
+    ) # 'image_tag',
     # inlines = (RecipeIngredientInline,)
     search_fields = ('name', 'author__username',
                      'author__email', 'ingredients')
     list_filter = ('author', 'name', 'tags', 'ingredients')
     ordering = ('-id',)
 
-    def image_tag(self, obj):
-        if obj.image:
-            return mark_safe('<img src="{}" width="150"'
-                             'height="100" />'.format(obj.image.url))
-        return None
+    # def image_tag(self, obj):
+    #     if obj.image:
+    #         return mark_safe('<img src="{}" width="150"'
+    #                          'height="100" />'.format(obj.image.url))
+    #     return None
 
-    image_tag.short_description = 'Фото рецепта'
+    # image_tag.short_description = 'Фото рецепта'
 
     @admin.display(description='Количество в избранных')
     def favorites_count(self, obj):
