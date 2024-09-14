@@ -49,7 +49,7 @@ class RecipeAdmin(admin.ModelAdmin):
         'id', 'name', 'author',
         'image_tag', 'favorites_count'
     )
-    inlines = (RecipeIngredientInline,)
+    # inlines = (RecipeIngredientInline,)
     search_fields = ('name', 'author__username',
                      'author__email', 'ingredients')
     list_filter = ('author', 'name', 'tags', 'ingredients')
