@@ -25,8 +25,8 @@ class RecipeForm(forms.ModelForm):
 class RecipeIngredientInline(admin.TabularInline):
     """Админ-модель рецептов_ингредиентов"""
     model = RecipeIngredient
+    form = RecipeForm
     extra = 1
-    min_num = 1
 
 
 @admin.register(Tag)
