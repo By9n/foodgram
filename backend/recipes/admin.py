@@ -8,14 +8,6 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
 
 
 class RecipeForm(forms.ModelForm):
-    ingredients = forms.ModelMultipleChoiceField(
-        queryset=Ingredient.objects.all(),
-        widget=admin.widgets.FilteredSelectMultiple(
-            "Ингредиенты", is_stacked=False
-        ),
-        required=True,
-    )
-
     class Meta:
         model = Recipe
         fields = '__all__'
