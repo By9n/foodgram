@@ -7,17 +7,10 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 
 
-# class RecipeForm(forms.ModelForm):
-#     class Meta:
-#         model = Recipe
-#         fields = '__all__'
-
-
-class RecipeIngredientInline(admin.TabularInline):
+class RecipeIngredientInline(admin.StackedInline):
     """Админ-модель рецептов_ингредиентов"""
     model = RecipeIngredient
-    # form = RecipeForm
-    extra = 1
+    autocomplete_fields = ('ingredient',)
 
 
 @admin.register(Tag)
