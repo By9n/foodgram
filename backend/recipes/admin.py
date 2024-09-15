@@ -12,14 +12,14 @@ class RecipeForm(forms.ModelForm):
         model = Recipe
         fields = '__all__'
 
-    def clean(self):
-        cleaned_data = super().clean()
-        ingredients = self.instance.recipeingredient_set.all()
-        if not ingredients.exists():
-            raise forms.ValidationError(
-                "Необходимо добавить хотя бы один ингредиент к рецепту."
-            )
-        return cleaned_data
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     ingredients = self.instance.recipeingredient_set.all()
+    #     if not ingredients.exists():
+    #         raise forms.ValidationError(
+    #             "Необходимо добавить хотя бы один ингредиент к рецепту."
+    #         )
+    #     return cleaned_data
 
 
 class RecipeIngredientInline(admin.TabularInline):
@@ -70,7 +70,7 @@ class RecipeAdmin(admin.ModelAdmin):
         return 0
 
     def save_model(self, request, obj, form, change):
-        ingredients = obj.recipeingredient_set.all()
+        ingredients = RecipeIngredient.objects.filter(recipe=obj)
         if not ingredients.exists():
             raise ValidationError(
                 "Необходимо добавить хотя бы один ингредиент к рецепту."
