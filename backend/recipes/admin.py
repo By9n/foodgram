@@ -7,16 +7,16 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 
 
-class RecipeForm(forms.ModelForm):
-    class Meta:
-        model = Recipe
-        fields = '__all__'
+# class RecipeForm(forms.ModelForm):
+#     class Meta:
+#         model = Recipe
+#         fields = '__all__'
 
 
 class RecipeIngredientInline(admin.TabularInline):
     """Админ-модель рецептов_ингредиентов"""
     model = RecipeIngredient
-    form = RecipeForm
+    # form = RecipeForm
     extra = 1
 
 
@@ -59,16 +59,6 @@ class RecipeAdmin(admin.ModelAdmin):
         if Favorite.objects.filter(recipe=obj).exists():
             return Favorite.objects.filter(recipe=obj).count()
         return 0
-
-    def save_model(self, request, obj, form, change):
-        if not obj.pk:
-            # Если это новый рецепт
-            ingredients = form.cleaned_data.get('ingredients', [])
-            if not ingredients:
-                # Если нет ингредиентов, то выводим ошибку
-                form.add_error('ingredients', 'Необходимо добавить хотя бы один ингредиент к рецепту.')
-                raise ValidationError('Необходимо добавить хотя бы один ингредиент к рецепту.')
-        super().save_model(request, obj, form, change)
 
 
 @admin.register(Ingredient)
