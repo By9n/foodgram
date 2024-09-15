@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 
-from api.validators import validate_ingredients, validate_tags
+from api.validators import validate_tags
 from recipes.constants import MIN_AMOUNT_INGREDIENT
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             RecipeShortLink, ShoppingCart, Tag)
@@ -154,7 +154,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатор просмотра модели Рецепт."""
     tags = TagSerializer(many=True)
     author = UserSerializer(read_only=True)
-    ingredients = serializers.SerializerMethodField(required=True)
+    ingredients = serializers.SerializerMethodField()
     image = Base64ImageField(required=True)
     is_favorited = serializers.SerializerMethodField(
         method_name='get_is_favorited')
@@ -238,7 +238,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         tags = self.initial_data.get('tags')
         tags = validate_tags(tags)
         ingredients = self.initial_data.get('ingredients')
-        ingredients = validate_ingredients(ingredients)
         if not ingredients:
             raise serializers.ValidationError({
                 'ingredients': 'Нужен хоть один ингридиент для рецепта'})
