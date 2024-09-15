@@ -72,9 +72,11 @@ class RecipeAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         ingredients = RecipeIngredient.objects.filter(recipe=obj)
         if not ingredients.exists():
-            raise ValidationError(
-                "Необходимо добавить хотя бы один ингредиент к рецепту."
-            )
+            if not ingredients.exists():
+                form.add_error(
+                    None, "Необходимо добавить хотя бы один ингредиент к рецепту."
+                )
+                return
         super().save_model(request, obj, form, change)
 
 
