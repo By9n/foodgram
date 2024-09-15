@@ -1,6 +1,5 @@
 from django import forms
 from django.contrib import admin
-from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
@@ -11,15 +10,6 @@ class RecipeForm(forms.ModelForm):
     class Meta:
         model = Recipe
         fields = '__all__'
-
-    # def clean(self):
-    #     cleaned_data = super().clean()
-    #     ingredients = self.instance.recipeingredient_set.all()
-    #     if not ingredients.exists():
-    #         raise forms.ValidationError(
-    #             "Необходимо добавить хотя бы один ингредиент к рецепту."
-    #         )
-    #     return cleaned_data
 
 
 class RecipeIngredientInline(admin.TabularInline):
