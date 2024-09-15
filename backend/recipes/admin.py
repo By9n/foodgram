@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
@@ -7,6 +8,14 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
 
 
 class RecipeForm(forms.ModelForm):
+    ingredients = forms.ModelMultipleChoiceField(
+        queryset=Ingredient.objects.all(),
+        widget=admin.widgets.FilteredSelectMultiple(
+            "Ингредиенты", is_stacked=False
+        ),
+        required=True,
+    )
+
     class Meta:
         model = Recipe
         fields = '__all__'
@@ -60,13 +69,13 @@ class RecipeAdmin(admin.ModelAdmin):
         return 0
 
     def save_model(self, request, obj, form, change):
-        ingredients = RecipeIngredient.objects.filter(recipe=obj)
-        if not ingredients.exists():
-            if not ingredients.exists():
-                form.add_error(
-                    None, "Необходимо добавить хотя бы один ингредиент к рецепту."
-                )
-                return
+        if not obj.pk:
+            # Если это новый рецепт
+            ingredients = form.cleaned_data.get('ingredients', [])
+            if not ingredients:
+                # Если нет ингредиентов, то выводим ошибку
+                form.add_error('ingredients', 'Необходимо добавить хотя бы один ингредиент к рецепту.')
+                raise ValidationError('Необходимо добавить хотя бы один ингредиент к рецепту.')
         super().save_model(request, obj, form, change)
 
 
