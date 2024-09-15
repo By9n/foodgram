@@ -8,7 +8,7 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
 class RecipeIngredientInline(admin.StackedInline):
     """Админ-модель рецептов_ингредиентов"""
     model = RecipeIngredient
-    autocomplete_fields = ('ingredient',)
+    min_num = 1
 
 
 @admin.register(Tag)
