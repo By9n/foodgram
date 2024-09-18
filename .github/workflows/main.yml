@@ -104,7 +104,7 @@ jobs:
           cd foodgram/infra
           sudo docker compose -f docker-compose.production.yml down
           sudo docker compose -f docker-compose.production.yml pull
-          sudo docker compose -f docker-compose.production.yml up -d --build
+          sudo docker compose -f docker-compose.production.yml up -d
         port: 22
         sync: false
         use_insecure_cipher: false
